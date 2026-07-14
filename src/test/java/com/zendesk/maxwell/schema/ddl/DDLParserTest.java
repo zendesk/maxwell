@@ -11,6 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
+import java.util.regex.Pattern;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
@@ -34,6 +36,34 @@ public class DDLParserTest {
 
 	private TableCreate parseCreate(String sql) {
 		return (TableCreate) parse(sql).get(0);
+	}
+
+	@Test
+	public void testConfiguredVersionedCommentsAreIgnored() {
+		List<Pattern> patterns = Arrays.asList(
+			Pattern.compile("^COMPRESSED$", Pattern.CASE_INSENSITIVE),
+			Pattern.compile("^VENDOR ATTRIBUTE$", Pattern.CASE_INSENSITIVE)
+		);
+		String sql = "CREATE TABLE step_instance ("
+			+ "id BIGINT NOT NULL, "
+			+ "target_servers LONGTEXT /*!99104 COMPRESSED */, "
+			+ "metadata LONGTEXT /*!99105 vendor   attribute */, "
+			+ "PRIMARY KEY (id), KEY idx_step (id)) ENGINE=InnoDB";
+
+		List<SchemaChange> changes = SchemaChange.parse("default_db", sql, patterns);
+		assertThat(changes, is(notNullValue()));
+		assertThat(changes.size(), is(1));
+		assertThat(((TableCreate) changes.get(0)).columns.size(), is(3));
+	}
+
+	@Test
+	public void testNonMatchingVersionedCommentsArePreserved() {
+		String sql = "CREATE TABLE test (id INT /*!80000 NOT NULL */)";
+		String filtered = DDLVersionedCommentFilter.filter(
+			sql,
+			Arrays.asList(Pattern.compile("^COMPRESSED$", Pattern.CASE_INSENSITIVE))
+		);
+		assertThat(filtered, is(sql));
 	}
 
 	@Test

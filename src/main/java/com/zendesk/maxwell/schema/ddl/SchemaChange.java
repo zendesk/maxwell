@@ -106,9 +106,15 @@ public abstract class SchemaChange {
 	}
 
 	public static List<SchemaChange> parse(String currentDB, String sql) {
+		return parse(currentDB, sql, null);
+	}
+
+	public static List<SchemaChange> parse(String currentDB, String sql, List<Pattern> ignoredVersionedCommentPatterns) {
 		if ( matchesBlacklist(sql) ) {
 			return null;
 		}
+
+		sql = DDLVersionedCommentFilter.filter(sql, ignoredVersionedCommentPatterns);
 
 		while ( true ) {
 			try {

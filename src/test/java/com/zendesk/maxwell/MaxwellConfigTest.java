@@ -153,6 +153,25 @@ public class MaxwellConfigTest
 		assertEquals(config.pubsubRpcTimeoutMultiplier, 1.0f, 0.0f);
 	}
 
+	@Test
+	public void testDDLVersionedCommentIgnorePatterns() {
+		config = new MaxwellConfig(new String[] {
+			"--ddl_versioned_comment_ignore_patterns=^COMPRESSED$;^VENDOR ATTRIBUTE$"
+		});
+		assertEquals(2, config.ddlVersionedCommentIgnorePatterns.size());
+		assertTrue(config.ddlVersionedCommentIgnorePatterns.get(0).matcher("compressed").matches());
+		assertTrue(config.ddlVersionedCommentIgnorePatterns.get(1).matcher("vendor attribute").matches());
+	}
+
+	@Test
+	public void testDDLVersionedCommentIgnorePatternsFromConfigFile() {
+		String configPath = getTestConfigDir() + "ddl-versioned-comment-config.properties";
+		config = new MaxwellConfig(new String[] { "--config=" + configPath });
+		assertEquals(2, config.ddlVersionedCommentIgnorePatterns.size());
+		assertTrue(config.ddlVersionedCommentIgnorePatterns.get(0).matcher("compressed").matches());
+		assertTrue(config.ddlVersionedCommentIgnorePatterns.get(1).matcher("vendor attribute").matches());
+	}
+
 
 	private String getTestConfigDir() {
 		return System.getProperty("user.dir") + "/src/test/resources/config/";

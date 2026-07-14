@@ -70,6 +70,9 @@ public class MaxwellConfig extends AbstractConfig {
 	 */
 	public Filter filter;
 
+	/** Patterns for version-comment contents that should be removed before DDL parsing. */
+	public List<Pattern> ddlVersionedCommentIgnorePatterns = Collections.emptyList();
+
 	/**
 	 * Ignore any missing database / table schemas, unless they're
 	 * included as part of filters. Default false.  Don't use unless
@@ -800,6 +803,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "ignore_missing_schema", "Ignore missing database and table schemas.  Only use running with limited permissions." )
 			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "ddl_versioned_comment_ignore_patterns", "semicolon-separated regular expressions for version-comment contents to ignore while parsing DDL" )
+			.withRequiredArg();
 
 		parser.accepts( "javascript", "file containing per-row javascript to execute" ).withRequiredArg();
 
@@ -1214,6 +1219,9 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.filterList          = fetchStringOption("filter", options, properties, null);
 		this.ignoreMissingSchema          =  fetchBooleanOption("ignore_missing_schema", options, properties, false);
+		this.ddlVersionedCommentIgnorePatterns = parseDDLVersionedCommentIgnorePatterns(
+			fetchStringOption("ddl_versioned_comment_ignore_patterns", options, properties, null)
+		);
 
 		setupInitPosition(options);
 
@@ -1527,6 +1535,24 @@ public class MaxwellConfig extends AbstractConfig {
 		} else {
 			return Pattern.compile("^" + Pattern.quote(name) + "$");
 		}
+	}
+
+	private List<Pattern> parseDDLVersionedCommentIgnorePatterns(String value) {
+		if (value == null || value.trim().isEmpty())
+			return Collections.emptyList();
+
+		List<Pattern> patterns = new ArrayList<>();
+		for (String expression : value.split(";")) {
+			expression = expression.trim();
+			if (expression.isEmpty())
+				continue;
+			try {
+				patterns.add(Pattern.compile(expression, Pattern.CASE_INSENSITIVE | Pattern.DOTALL));
+			} catch (java.util.regex.PatternSyntaxException e) {
+				usageForOptions("Invalid ddl_versioned_comment_ignore_patterns expression '" + expression + "': " + e.getMessage(), "--ddl_versioned_comment_ignore_patterns");
+			}
+		}
+		return Collections.unmodifiableList(patterns);
 	}
 
 	private <T> T fetchFactory(OptionSet options, Properties properties, String name) {

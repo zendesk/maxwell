@@ -200,6 +200,7 @@ output_naming_strategy         | STRING   | naming strategy of field name of JSO
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 filter                         | STRING            | filter rules, eg `exclude: db.*, include: *.tbl, include: *./bar(bar)?/, exclude: foo.bar.col=val` |
+ddl_versioned_comment_ignore_patterns | STRING     | semicolon-separated, case-insensitive regular expressions matching version-comment contents to remove before DDL parsing | empty
 
 _See also:_ [filtering](/filtering)
 
@@ -290,7 +291,6 @@ The configuration priority is:
 ```
 command line options > scoped env vars > properties file > default values
 ```
-
 ## config.properties
 
 Maxwell can be configured via a java properties file, specified via `--config`
@@ -324,5 +324,3 @@ A get request will return the live config state
 	"filter": "exclude: noisy_db.*"
 }
 ```
-
-

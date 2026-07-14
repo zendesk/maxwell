@@ -50,6 +50,10 @@ password=maxwell
 # enable this option Maxwell will periodically compact its tables.
 #max_schemas=10000
 
+# semicolon-separated, case-insensitive regular expressions matching the normalized content
+# inside MySQL version comments to remove before DDL parsing. Example: /*!99104 COMPRESSED */
+#ddl_versioned_comment_ignore_patterns=^COMPRESSED$;^VENDOR_ATTRIBUTE .*$
+
 # SSL/TLS options
 # To use VERIFY_CA or VERIFY_IDENTITY, you must set the trust store with Java opts:
 #   -Djavax.net.ssl.trustStore=<truststore> -Djavax.net.ssl.trustStorePassword=<password>

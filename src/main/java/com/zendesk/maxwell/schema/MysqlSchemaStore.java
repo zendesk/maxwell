@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import static com.zendesk.maxwell.schema.MysqlSavedSchema.restore;
 
@@ -31,7 +32,20 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 							CaseSensitivity caseSensitivity,
 							Filter filter,
 							boolean readOnly) {
-		super(replicationConnectionPool, schemaConnectionPool, caseSensitivity, filter);
+		this(maxwellConnectionPool, replicationConnectionPool, schemaConnectionPool, serverID,
+			initialPosition, caseSensitivity, filter, readOnly, Collections.emptyList());
+	}
+
+	public MysqlSchemaStore(ConnectionPool maxwellConnectionPool,
+							ConnectionPool replicationConnectionPool,
+							ConnectionPool schemaConnectionPool,
+							Long serverID,
+							Position initialPosition,
+							CaseSensitivity caseSensitivity,
+							Filter filter,
+							boolean readOnly,
+							List<Pattern> ignoredDDLVersionedCommentPatterns) {
+		super(replicationConnectionPool, schemaConnectionPool, caseSensitivity, filter, ignoredDDLVersionedCommentPatterns);
 		this.serverID = serverID;
 		this.maxwellConnectionPool = maxwellConnectionPool;
 		this.initialPosition = initialPosition;
@@ -47,7 +61,8 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 			initialPosition,
 			context.getCaseSensitivity(),
 			context.getFilter(),
-			context.getReplayMode()
+			context.getReplayMode(),
+			context.getConfig().ddlVersionedCommentIgnorePatterns
 		);
 	}
 

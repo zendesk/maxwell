@@ -4,6 +4,8 @@ import java.sql.SQLException;
 import java.sql.Connection;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.regex.Pattern;
 
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.filtering.Filter;
@@ -22,15 +24,25 @@ public abstract class AbstractSchemaStore {
 	protected final ConnectionPool schemaConnectionPool;
 	protected final CaseSensitivity caseSensitivity;
 	private final Filter filter;
+	private final List<Pattern> ignoredDDLVersionedCommentPatterns;
 
 	protected AbstractSchemaStore(ConnectionPool replicationConnectionPool,
 								  ConnectionPool schemaConnectionPool,
 								  CaseSensitivity caseSensitivity,
 								  Filter filter) {
+		this(replicationConnectionPool, schemaConnectionPool, caseSensitivity, filter, Collections.emptyList());
+	}
+
+	protected AbstractSchemaStore(ConnectionPool replicationConnectionPool,
+								  ConnectionPool schemaConnectionPool,
+								  CaseSensitivity caseSensitivity,
+								  Filter filter,
+								  List<Pattern> ignoredDDLVersionedCommentPatterns) {
 		this.replicationConnectionPool = replicationConnectionPool;
 		this.schemaConnectionPool = schemaConnectionPool;
 		this.caseSensitivity = caseSensitivity;
 		this.filter = filter;
+		this.ignoredDDLVersionedCommentPatterns = ignoredDDLVersionedCommentPatterns;
 	}
 
 	protected AbstractSchemaStore(MaxwellContext context) throws SQLException {
@@ -46,7 +58,7 @@ public abstract class AbstractSchemaStore {
 	}
 
 	protected List<ResolvedSchemaChange> resolveSQL(Schema schema, String sql, String currentDatabase) throws InvalidSchemaError {
-		List<SchemaChange> changes = SchemaChange.parse(currentDatabase, sql);
+		List<SchemaChange> changes = SchemaChange.parse(currentDatabase, sql, ignoredDDLVersionedCommentPatterns);
 
 		if ( changes == null || changes.size() == 0 )
 			return new ArrayList<>();
@@ -68,5 +80,4 @@ public abstract class AbstractSchemaStore {
 		return resolvedSchemaChanges;
 	}
 }
-
 
