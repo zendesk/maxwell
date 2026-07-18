@@ -478,6 +478,22 @@ public class DDLParserTest {
 	}
 
 	@Test
+	public void testEscapedBacktickInIdentifiers() {
+		// mysql escapes a backtick inside a quoted identifier by doubling it, so
+		// `otherdbcopy.``otherdbtable` names the table  otherdbcopy.`otherdbtable
+		List<SchemaChange> changes = parse("drop table actualdb.`otherdbcopy.``otherdbtable`");
+		TableDrop d = (TableDrop) changes.get(0);
+		assertThat(d.database, is("actualdb"));
+		assertThat(d.table, is("otherdbcopy.`otherdbtable"));
+
+		// the same unescaping applies to any quoted identifier, not just table names
+		TableCreate c = parseCreate("create table `db``1`.`tbl``1` (`col``1` int)");
+		assertThat(c.database, is("db`1"));
+		assertThat(c.table, is("tbl`1"));
+		assertThat(c.columns.get(0).getName(), is("col`1"));
+	}
+
+	@Test
 	public void testCreateDatabase() {
 		List<SchemaChange> changes = parse("CREATE DATABASE if not exists `foo` default character set='latin1'");
 		DatabaseCreate create = (DatabaseCreate) changes.get(0);
