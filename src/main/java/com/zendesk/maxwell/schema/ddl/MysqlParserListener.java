@@ -41,7 +41,10 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 	private String unquote(String ident) {
 		if ( ident.startsWith("`") || ident.startsWith("\"")) {
-			return ident.substring(1, ident.length() - 1);
+			// mysql escapes the quote character inside a quoted identifier by
+			// doubling it, so `foo``bar` names the table  foo`bar
+			String quote = ident.substring(0, 1);
+			return ident.substring(1, ident.length() - 1).replace(quote + quote, quote);
 		} else
 			return ident;
 	}
