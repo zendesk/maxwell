@@ -7,6 +7,7 @@ import com.rabbitmq.client.MessageProperties;
 import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.util.TopicInterpolator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,8 +24,12 @@ public class RabbitmqProducer extends AbstractProducer {
 	private static String exchangeName;
 	private static BasicProperties props;
 	private Channel channel;
+	private final TopicInterpolator topicInterpolator;
+
 	public RabbitmqProducer(MaxwellContext context) {
 		super(context);
+		String routingKeyTemplate = context.getConfig().rabbitmqRoutingKeyTemplate;
+		this.topicInterpolator = new TopicInterpolator(routingKeyTemplate);
 		exchangeName = context.getConfig().rabbitmqExchange;
 		props = context.getConfig().rabbitmqMessagePersistent ? MessageProperties.MINIMAL_PERSISTENT_BASIC : null;
 
@@ -86,9 +91,28 @@ public class RabbitmqProducer extends AbstractProducer {
 		}
 
 		String value = r.toJSON(outputConfig);
-		String routingKey = getRoutingKeyFromTemplate(r);
+		String routingKey = this.topicInterpolator.generateFromRowMap(r);
+		routingKey = generateForOldTemplate(routingKey, r);
 
-		channel.basicPublish(exchangeName, routingKey, props, value.getBytes());
+		try {
+			channel.basicPublish(exchangeName, routingKey, props, value.getBytes());
+			this.succeededMessageCount.inc();
+			this.succeededMessageMeter.mark();
+		} catch (Exception e) {
+			this.failedMessageCount.inc();
+			this.failedMessageMeter.mark();
+
+			LOGGER.error(e.getClass().getSimpleName() + " @ " + r.getNextPosition());
+			LOGGER.error(e.getLocalizedMessage());
+
+			throw e;
+			// TODO: will change the previous default behavior
+			// if ( !this.context.getConfig().ignoreProducerError ) {
+			// 	this.context.terminate(new RuntimeException(e));
+			// 	return;
+			// }
+		}
+
 		if ( r.isTXCommit() ) {
 			context.setPosition(r.getNextPosition());
 		}
@@ -97,15 +121,16 @@ public class RabbitmqProducer extends AbstractProducer {
 		}
 	}
 
-	private String getRoutingKeyFromTemplate(RowMap r) {
+	private String generateForOldTemplate(String routingKey, RowMap r) {
+		if ( !routingKey.contains("%") ) {
+			return routingKey;
+		}
 		String table = r.getTable();
 
 		if ( table == null )
 			table = "";
 
-		return context
-				.getConfig()
-				.rabbitmqRoutingKeyTemplate
+		return routingKey
 				.replace("%db%", r.getDatabase())
 				.replace("%table%", table);
 	}

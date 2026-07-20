@@ -153,7 +153,7 @@ rabbitmq_exchange              | STRING     | Name of exchange for rabbitmq publ
 rabbitmq_exchange_type         | STRING     | Exchange type for rabbitmq |
 rabbitmq_exchange_durable      | BOOLEAN    | Exchange durability. | false
 rabbitmq_exchange_autodelete   | BOOLEAN    | If set, the exchange is deleted when all queues have finished using it. | false
-rabbitmq_routing_key_template  | STRING     | A string template for the routing key, `%db%` and `%table%` will be substituted. | `%db%.%table%`.
+rabbitmq_routing_key_template  | STRING     | A string template for the routing key. | `%{database}.%{table}`.
 rabbitmq_message_persistent    | BOOLEAN    | Eanble message persistence. | false
 rabbitmq_declare_exchange      | BOOLEAN    | Should declare the exchange for rabbitmq publisher | true
 rabbitmq_use_ssl               | BOOLEAN    | If true, will connect to the server using SSL. | false
