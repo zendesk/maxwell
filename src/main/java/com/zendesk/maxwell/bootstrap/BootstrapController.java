@@ -165,4 +165,8 @@ public class BootstrapController extends RunLoopProcess  {
 		}
 	}
 
+	@Override
+	public StopPriority getStopPriority() {
+		return StopPriority.BINLOG;
+	}
 }

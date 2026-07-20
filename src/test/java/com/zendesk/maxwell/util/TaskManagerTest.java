@@ -31,6 +31,11 @@ public class TaskManagerTest {
 		public void awaitStop(Long timeout) throws TimeoutException {
 			log.add(new Event(EventType.AWAIT_STOP, this.name));
 		}
+
+		@Override
+		public StopPriority getStopPriority() {
+			return StopPriority.SUPPORT;
+		}
 	}
 	enum EventType { REQUEST_STOP, AWAIT_STOP };
 
@@ -45,6 +50,11 @@ public class TaskManagerTest {
 		@Override
 		public void awaitStop(Long timeout) throws TimeoutException {
 			throw new TimeoutException("can't stop this");
+		}
+
+		@Override
+		public StopPriority getStopPriority() {
+			return StopPriority.BINLOG;
 		}
 	}
 

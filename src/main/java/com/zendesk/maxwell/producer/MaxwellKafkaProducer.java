@@ -304,6 +304,11 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		taskState.awaitStop(thread, timeout);
 	}
 
+	@Override
+	public StopPriority getStopPriority() {
+		return StopPriority.PRODUCER;
+	}
+
 	// force-close for tests.
 	public void close() {
 		kafka.close();

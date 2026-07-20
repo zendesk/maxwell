@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.producer;
 
 import com.codahale.metrics.Gauge;
-import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.replication.Position;
@@ -16,21 +15,21 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 		private final MaxwellContext context;
 		private final int metricsAgeSloMs;
 		private final Position position;
-		private final boolean isTXCommit;
+		private final boolean shouldCommit;
 		private final long messageID;
 
-		public CallbackCompleter(InflightMessageList inflightMessages, Position position, boolean isTXCommit, MaxwellContext context, long messageID) {
+		public CallbackCompleter(InflightMessageList inflightMessages, Position position, boolean shouldCommit, MaxwellContext context, long messageID) {
 			this.inflightMessages = inflightMessages;
 			this.context = context;
 			this.metricsAgeSloMs = context.getConfig().metricsAgeSlo * 1000;
 			this.position = position;
-			this.isTXCommit = isTXCommit;
+			this.shouldCommit = shouldCommit;
 			this.messageID = messageID;
 		}
 
 		public void markCompleted() {
 			inflightMessages.freeSlot(messageID);
-			if(isTXCommit) {
+			if(shouldCommit) {
 				InflightMessageList.InflightMessage message = inflightMessages.completeMessage(position);
 
 				if (message != null) {

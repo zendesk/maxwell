@@ -167,11 +167,24 @@ public class BinlogConnectorEvent {
 		return map;
 	}
 
-	public List<RowMap> jsonMaps(Table table, long lastHeartbeatRead, String rowQuery) throws ColumnDefCastException {
+	public List<RowMap> jsonMaps(Table table, long lastHeartbeatRead, String rowQuery, BinlogPosition lastTableMapPosition) throws ColumnDefCastException {
 		ArrayList<RowMap> list = new ArrayList<>();
 
-		Position position     = Position.valueOf(this.position, lastHeartbeatRead);
-		Position nextPosition = Position.valueOf(this.nextPosition, lastHeartbeatRead);
+		Position position     = Position.valueOf(this.position, lastHeartbeatRead, 0L);
+		/*
+			at the time our RowMaps are created we have no idea where we are
+			in a transaciton; we may be the last row-event in the transaction
+			in which case we're going to "commit" -- ie advance maxwell.positions,
+			or we may be in the middle of a transaction.
+
+			If we're in the middle of a transaction, we want to leave the binlog pointer
+			pointing at the table-map event that precedes this.  The calling function
+			will additionally add a row-offset to the position of each row.
+
+			All this mechanism allows maxwell to stop and restart in the middle of very large
+			transactions.
+		 */
+		Position nextPosition = Position.valueOf(lastTableMapPosition, lastHeartbeatRead, 0L);
 
 		switch ( getType() ) {
 			case WRITE_ROWS:

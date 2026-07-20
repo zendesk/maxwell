@@ -2,6 +2,7 @@ package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.util.TaskManager;
 import com.zendesk.maxwell.util.TopicInterpolator;
 import com.zendesk.maxwell.util.StoppableTask;
 import org.slf4j.Logger;
@@ -20,7 +21,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public class MaxwellRedisProducer extends AbstractProducer implements StoppableTask {
+public
+class MaxwellRedisProducer extends AbstractProducer implements StoppableTask {
 	private static final Logger logger = LoggerFactory.getLogger(MaxwellRedisProducer.class);
 	private final String channel;
 	private final String redisType;
@@ -189,6 +191,11 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 
 	@Override
 	public void awaitStop(Long timeout) { }
+
+	@Override
+	public StopPriority getStopPriority() {
+		return StopPriority.PRODUCER;
+	}
 
 	@Override
 	public StoppableTask getStoppableTask() {

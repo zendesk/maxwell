@@ -256,7 +256,7 @@ public class MaxwellContext {
 
 		if (taskManager.requestStop()) {
 			if (this.error == null && this.replicator != null) {
-				sendFinalHeartbeat();
+				stopReplicator();
 			}
 			this.terminationThread = spawnTerminateThread();
 		}
@@ -264,12 +264,18 @@ public class MaxwellContext {
 	}
 
 
-	private void sendFinalHeartbeat() {
+	/**
+	 * Attempt to gracefully terminate the binlog replicator by sending a heartbeat
+	 * through the system for the replicator to stop at.  If this fails we'll terminate
+	 * more forcefully.
+	 */
+	private void stopReplicator() {
 		long heartbeat = System.currentTimeMillis();
 		LOGGER.info("Sending final heartbeat: " + heartbeat);
 		try {
 			this.replicator.stopAtHeartbeat(heartbeat);
 			this.positionStore.heartbeat(heartbeat);
+
 			long deadline = heartbeat + 5000L;
 			while (positionStoreThread.getPosition().getLastHeartbeatRead() < heartbeat) {
 				if (System.currentTimeMillis() > deadline) {
@@ -423,8 +429,7 @@ public class MaxwellContext {
 	 * @param r A processed Rowmap
 	 */
 	public void setPosition(RowMap r) {
-		if ( r.isTXCommit() )
-			this.setPosition(r.getNextPosition());
+		this.setPosition(r.getNextPosition());
 	}
 
 	/**
