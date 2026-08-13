@@ -1,0 +1,89 @@
+name: HeiBot OPEX Remediation 🤖
+
+on:
+  schedule:
+    - cron: '40 2 * * 1'  # Monday 2:40am UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: read
+
+jobs:
+  find-existing-pr:
+    runs-on:
+      - self-hosted
+      - zendesk-stable
+    outputs:
+      pr_number: ${{ steps.find.outputs.pr_number }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: '1'
+      - name: Find open opex-remediation PR
+        id: find
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pr_number=$(gh pr list --state open --label opex-remediation --json number --jq '.[0].number // ""')
+          echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
+
+  heibot:
+    needs: find-existing-pr
+    uses: zendesk/support-test-deployments/.github/workflows/heibot-template.yml@main
+    with:
+      prompt: |
+        Check this repository for OPEX findings (dependency/container/VM
+        vulnerabilities, e.g. via opex-mcp and GitHub security advisories).
+        Fix what you can safely fix and open a pull request with the changes.
+        If nothing is found, do not open a PR.
+        Prefer bumping the direct/parent-declared dependency version over adding
+        a version override/pin; only add an override when the vulnerable version
+        is a transitive dependency with no direct declaration to change AND no
+        shared/inherited dependency spec (e.g. a BOM, lockfile constraint, or
+        internal platform library) that could be bumped instead to pull in the fix.
+        Also check existing overrides/pins already in the repo: if the dependency
+        they target now resolves to a patched version through its normal declared
+        source (direct dep or inherited spec) without the override, remove the
+        now-redundant override in the same PR.
+      run-setup: true
+      event-name: workflow_dispatch
+      meta: >-
+        ${{
+          needs.find-existing-pr.outputs.pr_number != ''
+            && format('{{"pr-number":"{0}","mcp":{{"opex":{{"url":"https://mcp-gateway.zende.sk/mcps/opex"}}}}}}', needs.find-existing-pr.outputs.pr_number)
+            || '{"mcp":{"opex":{"url":"https://mcp-gateway.zende.sk/mcps/opex"}}}'
+        }}
+    secrets: inherit
+
+  label-pr:
+    needs: heibot
+    if: ${{ needs.heibot.outputs.pr_url != '' }}
+    runs-on:
+      - self-hosted
+      - zendesk-stable
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: '1'
+      - name: Ensure opex-remediation label
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ needs.heibot.outputs.pr_url }}
+        run: |
+          gh label create opex-remediation --color 5319E7 --description "Automated OPEX remediation PR" --force
+          pr_number="${PR_URL##*/}"
+          gh pr edit "$pr_number" --add-label opex-remediation
+      - name: Mark PR ready and clear auto-assignee
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ needs.heibot.outputs.pr_url }}
+        run: |
+          pr_number="${PR_URL##*/}"
+          gh pr ready "$pr_number"
+          assignees=$(gh pr view "$pr_number" --json assignees --jq '.assignees[].login')
+          for assignee in $assignees; do
+            gh pr edit "$pr_number" --remove-assignee "$assignee"
+          done

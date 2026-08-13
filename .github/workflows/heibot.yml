@@ -1,0 +1,82 @@
+name: HeiBot 🤖
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "Prompt to run with the AI agent"
+        required: true
+        type: string
+      read-only:
+        description: "Run in read-only mode (Q&A only, no changes or PRs)"
+        required: false
+        type: boolean
+        default: false
+      base-branch:
+        description: "Base branch for the pull request (default: repository default)"
+        required: false
+        type: string
+      branch-name:
+        description: "Branch name to create (default: heibot/<agent-proposed>.<hash>)"
+        required: false
+        type: string
+      run-setup:
+        description: "Run repo-specific setup hook if present (default: true)"
+        required: false
+        type: boolean
+        default: true
+      restore-session-from-run-id:
+        description: "Restore session from a previous run ID (for conversation continuity)"
+        required: false
+        type: string
+        default: ""
+      agent-context:
+        description: "Developer instructions provided to the AI agent"
+        required: false
+        type: string
+        default: ""
+      meta:
+        description: "JSON metadata with model, effort, slack config, PR targeting, etc."
+        required: false
+        type: string
+        default: ""
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  actions: read
+
+jobs:
+  heibot:
+    # Gate issue_comment to PR comments with recognized prefixes:
+    #   Write: "heibot, " / ".heibot " / ".heibot+ "
+    #   Q&A:   "question heibot, " / ".heibot? "
+    if: >-
+      ${{
+        github.event_name == 'workflow_dispatch' ||
+        (github.event_name == 'issue_comment' && github.event.issue.pull_request && (
+          startsWith(github.event.comment.body, 'heibot, ') ||
+          startsWith(github.event.comment.body, 'HeiBot, ') ||
+          startsWith(github.event.comment.body, 'question heibot, ') ||
+          startsWith(github.event.comment.body, 'Question HeiBot, ') ||
+          startsWith(github.event.comment.body, '.heibot ') ||
+          startsWith(github.event.comment.body, '.heibot+ ') ||
+          startsWith(github.event.comment.body, '.heibot? ')
+        ))
+      }}
+    uses: zendesk/support-test-deployments/.github/workflows/heibot-template.yml@main
+    with:
+      prompt: ${{ inputs.prompt }}
+      branch-name: ${{ inputs.branch-name }}
+      base-branch: ${{ inputs.base-branch }}
+      run-setup: ${{ inputs.run-setup || true }}
+      meta: ${{ inputs.meta }}
+      restore-session-from-run-id: ${{ inputs.restore-session-from-run-id }}
+      # For issue_comment: "question heibot, " / ".heibot? " trigger read-only; others trigger write mode
+      read-only: ${{ (github.event_name == 'issue_comment' && (startsWith(github.event.comment.body, 'question heibot, ') || startsWith(github.event.comment.body, 'Question HeiBot, ') || startsWith(github.event.comment.body, '.heibot? '))) || inputs.read-only || false }}
+      agent-context: ${{ inputs.agent-context }}
+      event-name: ${{ github.event_name }}  # Required: preserves original event type
+    secrets: inherit
