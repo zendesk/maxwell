@@ -13,7 +13,7 @@ cd maxwell-1.45.0
 **docker**:
 
 ```
-docker pull zendesk/maxwell
+docker pull osheroff/maxwell
 ```
 
 **homebrew**:
@@ -58,7 +58,7 @@ bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=s
 
 ## Docker
 ```
-docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME \
+docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME \
     --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
 ```
 
@@ -74,7 +74,7 @@ bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
 (or docker):
 
 ```
-docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME \
+docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME \
     --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kafka \
     --kafka.bootstrap.servers=$KAFKA_HOST:$KAFKA_PORT --kafka_topic=maxwell
 ```
@@ -82,7 +82,7 @@ docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME \
 ## Kinesis
 
 ```
-docker run -it --rm --name maxwell -v `cd && pwd`/.aws:/root/.aws zendesk/maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties && echo "Region=$AWS_DEFAULT_REGION" >> /app/kinesis-producer-library.properties && bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
+docker run -it --rm --name maxwell -v `cd && pwd`/.aws:/root/.aws osheroff/maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties && echo "Region=$AWS_DEFAULT_REGION" >> /app/kinesis-producer-library.properties && bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
 ```
 
 ## Nats

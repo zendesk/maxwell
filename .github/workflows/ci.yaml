@@ -1,4 +1,4 @@
-name: CI to Zendesk Dockerhub
+name: CI to Dockerhub
 
 on:
   push:
@@ -28,6 +28,6 @@ jobs:
           set -eu -o pipefail
           echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login --username=${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
           set -x
-          current_tag=zendesk/maxwell:"${GITHUB_REF##refs/tags/}"
-          latest_tag=zendesk/maxwell:latest
+          current_tag=osheroff/maxwell:"${GITHUB_REF##refs/tags/}"
+          latest_tag=osheroff/maxwell:latest
           docker buildx build --platform=linux/arm64,linux/amd64 --file=Dockerfile --push --tag="$current_tag" --tag="$latest_tag" .
