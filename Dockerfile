@@ -20,7 +20,7 @@ RUN cd /workspace \
     && echo "$MAXWELL_VERSION" > /REVISION
 
 # Build clean image with non-root priveledge
-FROM openjdk:23-jdk-slim
+FROM eclipse-temurin:23-jdk
 
 RUN apt-get update \
     && apt-get -y upgrade
@@ -33,6 +33,7 @@ COPY --from=builder /REVISION /REVISION
 
 WORKDIR /app
 
+RUN userdel -r ubuntu
 RUN useradd -u 1000 maxwell -d /app
 RUN chown 1000:1000 /app
 
