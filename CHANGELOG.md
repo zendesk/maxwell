@@ -1,5 +1,15 @@
 # Maxwell changelog
 
+### [v1.46.0](https://github.com/zendesk/maxwell/releases/tag/v1.46.0)
+
+- docker now hosted on https://hub.docker.com/r/osheroff/maxwell
+- some security fixes
+- fix pathological backtick parsing
+
+
+
+_Released 2026-09-23_
+
 ### [v1.45.0](https://github.com/zendesk/maxwell/releases/tag/v1.45.0)
 
 - transparently decompress binlogs from mysql 8.4
