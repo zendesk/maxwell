@@ -196,16 +196,16 @@
 <h1 id="download">Download</h1>
 <hr />
 <ul>
-<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.45.0/maxwell-1.45.0.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.45.0/maxwell-1.45.0.tar.gz</a></li>
+<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.46.0/maxwell-1.46.0.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.46.0/maxwell-1.46.0.tar.gz</a></li>
 <li>Sources and bug tracking is available on github: <a href="https://github.com/zendesk/maxwell">https://github.com/zendesk/maxwell</a></li>
 </ul>
 <p><strong>curl</strong>:</p>
-<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.45.0/maxwell-1.45.0.tar.gz \
+<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.46.0/maxwell-1.46.0.tar.gz \
        | tar zxvf -
-cd maxwell-1.45.0
+cd maxwell-1.46.0
 </code></pre>
 <p><strong>docker</strong>:</p>
-<pre><code>docker pull zendesk/maxwell
+<pre><code>docker pull osheroff/maxwell
 </code></pre>
 <p><strong>homebrew</strong>:</p>
 <pre><code>brew install maxwell
@@ -236,7 +236,7 @@ mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=stdout
 </code></pre>
 <h2 id="docker">Docker</h2>
-<pre><code>docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME \
+<pre><code>docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME \
     --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
 </code></pre>
 <h2 id="kafka">Kafka</h2>
@@ -245,12 +245,12 @@ mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell
    --producer=kafka --kafka.bootstrap.servers=localhost:9092 --kafka_topic=maxwell
 </code></pre>
 <p>(or docker):</p>
-<pre><code>docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME \
+<pre><code>docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME \
     --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kafka \
     --kafka.bootstrap.servers=$KAFKA_HOST:$KAFKA_PORT --kafka_topic=maxwell
 </code></pre>
 <h2 id="kinesis">Kinesis</h2>
-<pre><code>docker run -it --rm --name maxwell -v `cd &amp;&amp; pwd`/.aws:/root/.aws zendesk/maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties &amp;&amp; echo &quot;Region=$AWS_DEFAULT_REGION&quot; &gt;&gt; /app/kinesis-producer-library.properties &amp;&amp; bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
+<pre><code>docker run -it --rm --name maxwell -v `cd &amp;&amp; pwd`/.aws:/root/.aws osheroff/maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties &amp;&amp; echo &quot;Region=$AWS_DEFAULT_REGION&quot; &gt;&gt; /app/kinesis-producer-library.properties &amp;&amp; bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
 </code></pre>
 <h2 id="nats">Nats</h2>
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
