@@ -42,6 +42,11 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testReservedWordPkBootstrap() throws Exception {
+		runJSON("json/bootstrap-reserved-word-pk");
+	}
+
+	@Test
 	public void testMultipleTablesBootstrap() throws Exception {
 		runJSON("json/bootstrap-multiple-tables");
 	}
