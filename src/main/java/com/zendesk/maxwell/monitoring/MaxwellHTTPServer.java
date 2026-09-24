@@ -8,8 +8,8 @@ import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.util.StoppableTask;
 import jnr.ffi.annotations.In;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.ee8.servlet.ServletContextHandler;
+import org.eclipse.jetty.ee8.servlet.ServletHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,7 +100,9 @@ class MaxwellHTTPServerWorker implements StoppableTask, Runnable {
 		else {
 			this.server = new Server(this.port);
 		}
-		ServletContextHandler handler = new ServletContextHandler(this.server, pathPrefix);
+		ServletContextHandler handler = new ServletContextHandler();
+		handler.setContextPath(pathPrefix);
+		this.server.setHandler(handler);
 
 		handler.addServlet(new ServletHolder(indexList), "/");
 
