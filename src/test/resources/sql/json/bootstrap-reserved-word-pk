@@ -1,0 +1,10 @@
+truncate table maxwell.bootstrap;
+DROP TABLE IF EXISTS shard_1.reserved_pk_test;
+CREATE TABLE shard_1.reserved_pk_test (`domain` varchar(64) not null, `key` varchar(64) not null, `value` text, PRIMARY KEY (`domain`, `key`));
+insert into shard_1.reserved_pk_test values ('a', 'k1', 'v1'), ('a', 'k2', 'v2');
+insert into maxwell.bootstrap set database_name = 'shard_1', table_name = 'reserved_pk_test';
+
+-> { database: "shard_1", table: "reserved_pk_test", type: "bootstrap-start", data: {} }
+-> { database: "shard_1", table: "reserved_pk_test", type: "bootstrap-insert", data: { "domain": "a", "key": "k1", "value": "v1" } }
+-> { database: "shard_1", table: "reserved_pk_test", type: "bootstrap-insert", data: { "domain": "a", "key": "k2", "value": "v2" } }
+-> { database: "shard_1", table: "reserved_pk_test", type: "bootstrap-complete", data: {} }
