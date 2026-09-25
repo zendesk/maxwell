@@ -16,3 +16,4 @@ config/*.yml
 .vscode/
 .factorypath
 .sts4-cache/
+.env
