@@ -3,6 +3,7 @@ package com.zendesk.maxwell.bootstrap;
 import com.zendesk.maxwell.util.C3P0ConnectionPool;
 import com.zendesk.maxwell.util.Logging;
 import com.zendesk.maxwell.util.ConnectionPool;
+import com.zendesk.maxwell.util.Sql;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -164,7 +165,7 @@ public class MaxwellBootstrapUtility {
 
 	private Long calculateRowCount(Connection connection, String db, String table, String whereClause) throws SQLException {
 		LOGGER.info("counting rows");
-		String sql = String.format("select count(*) from `%s`.`%s`", db, table);
+		String sql = "select count(*) from " + Sql.quoteIdentifier(db) + "." + Sql.quoteIdentifier(table);
 		if ( whereClause != null ) {
 			sql += String.format(" where %s", whereClause);
 		}

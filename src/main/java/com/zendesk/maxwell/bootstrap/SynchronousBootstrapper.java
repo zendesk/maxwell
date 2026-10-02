@@ -16,6 +16,7 @@ import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
 import com.zendesk.maxwell.schema.columndef.DateColumnDef;
 import com.zendesk.maxwell.schema.columndef.TimeColumnDef;
 import com.zendesk.maxwell.scripting.Scripting;
+import com.zendesk.maxwell.util.Sql;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 /**
  * Does the bulk of the actual bootstrapping work
@@ -202,19 +204,39 @@ public class SynchronousBootstrapper {
 	private ResultSet getAllRows(String databaseName, String tableName, Table table, String whereClause,
 								 Connection connection) throws SQLException {
 		Statement statement = createBatchStatement(connection);
-		String pk = table.getPKString();
+		return statement.executeQuery(buildSelectSQL(databaseName, tableName, table, whereClause));
+	}
 
-		String sql = String.format("select * from `%s`.`%s`", databaseName, tableName);
+	/**
+	 * Build the query that streams a table's rows out for bootstrapping.
+	 *
+	 * All identifiers are quoted, so that tables and columns named after reserved
+	 * words (a primary key column called `key`, say) don't produce a syntax error.
+	 * The where clause is user-supplied SQL and is passed through untouched.
+	 *
+	 * @param databaseName the database to bootstrap from
+	 * @param tableName the table to bootstrap
+	 * @param table the captured schema for that table, used for the primary key
+	 * @param whereClause optional user-supplied filter, may be null
+	 * @return the select statement to execute
+	 */
+	static String buildSelectSQL(String databaseName, String tableName, Table table, String whereClause) {
+		String sql = "select * from "
+			+ Sql.quoteIdentifier(databaseName) + "." + Sql.quoteIdentifier(tableName);
 
 		if ( whereClause != null && !whereClause.equals("") ) {
 			sql += String.format(" where %s", whereClause);
 		}
 
-		if ( pk != null && !pk.equals("") ) {
-			sql += String.format(" order by %s", pk);
+		List<String> pkList = table.getPKList();
+
+		if ( pkList != null && !pkList.isEmpty() ) {
+			sql += " order by " + pkList.stream()
+				.map(Sql::quoteIdentifier)
+				.collect(Collectors.joining(","));
 		}
 
-		return statement.executeQuery(sql);
+		return sql;
 	}
 
 	private Statement createBatchStatement(Connection connection) throws SQLException {
