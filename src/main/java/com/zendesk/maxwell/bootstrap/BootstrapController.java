@@ -67,10 +67,18 @@ public class BootstrapController extends RunLoopProcess  {
 	@Override
 	protected void work() throws Exception {
 		try {
-			doWork();
+			try {
+				doWork();
+			} catch ( SQLException e ) {
+				LOGGER.error("got SQLException trying to bootstrap", e);
+			}
+
+			// pause after every pass, failed ones included, so a task that keeps
+			// throwing isn't retried in a tight loop.
+			Thread.sleep(1000);
 		} catch ( InterruptedException e ) {
-		} catch ( SQLException e ) {
-			LOGGER.error("got SQLException trying to bootstrap", e);
+			// not an error: runBootstrapNow() and requestStop() interrupt this thread
+			// to cut the wait short. The run loop checks straight away either way.
 		}
 	}
 
@@ -93,8 +101,6 @@ public class BootstrapController extends RunLoopProcess  {
 				}
 			}
 		}
-
-		Thread.sleep(1000);
 	}
 
 	private synchronized Long getCurrentSchemaID() {
