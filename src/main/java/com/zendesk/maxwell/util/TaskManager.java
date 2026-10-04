@@ -42,17 +42,26 @@ public class TaskManager {
 			LOGGER.error("cause: ", error);
 		}
 
-		// tell everything to stop
-		for (StoppableTask task: this.tasks) {
-			LOGGER.info("Stopping: " + task);
-			task.requestStop();
-		}
+		// tell everything to stop, binlog then producer then position store/etc
+		for ( StoppableTask.StopPriority priority : StoppableTask.StopPriority.values() ) {
+			for (StoppableTask task: this.tasks) {
+				if ( task.getStopPriority() != priority )
+					continue;
 
-		// then wait for everything to stop
-		Long timeout = 1000L;
-		for (StoppableTask task: this.tasks) {
-			LOGGER.debug("Awaiting stop of: {}", task);
-			task.awaitStop(timeout);
+				LOGGER.info("Stopping: " + task);
+				task.requestStop();
+			}
+
+			// then wait for everything to stop
+			Long timeout = 1000L;
+			for (StoppableTask task: this.tasks) {
+				if ( task.getStopPriority() != priority )
+					continue;
+
+				LOGGER.debug("Awaiting stop of: {}", task);
+				task.awaitStop(timeout);
+			}
+
 		}
 
 		this.state = RunState.STOPPED;

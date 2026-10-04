@@ -18,7 +18,7 @@ public class MaxwellKinesisProducerTest {
 
 	private static final long TIMESTAMP_MILLISECONDS = 1496712943447L;
 
-	private static final Position POSITION = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
+	private static final Position POSITION = new Position(new BinlogPosition(1L, "binlog-0001"), 0L, 0L);
 
 	@Test
 	public void dealsWithTooLargeRecord() throws Exception {

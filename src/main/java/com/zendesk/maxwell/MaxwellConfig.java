@@ -1298,7 +1298,7 @@ public class MaxwellConfig extends AbstractConfig {
 				}
 			}
 
-			this.initPosition = new Position(new BinlogPosition(pos, initPositionSplit[0]), lastHeartbeat);
+			this.initPosition = new Position(new BinlogPosition(pos, initPositionSplit[0]), lastHeartbeat, 0L);
 		}
 	}
 

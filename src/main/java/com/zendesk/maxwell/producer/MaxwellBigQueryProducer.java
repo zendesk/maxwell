@@ -239,7 +239,12 @@ class MaxwellBigQueryProducerWorker extends AbstractAsyncProducer implements Run
     taskState.awaitStop(thread, timeout);
   }
 
-  @Override
+	@Override
+	public StopPriority getStopPriority() {
+		return StopPriority.PRODUCER;
+	}
+
+	@Override
   public void run() {
     this.thread = Thread.currentThread();
     while (true) {

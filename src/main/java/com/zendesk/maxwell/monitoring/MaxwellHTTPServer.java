@@ -148,4 +148,9 @@ class MaxwellHTTPServerWorker implements StoppableTask, Runnable {
 	@Override
 	public void awaitStop(Long timeout) throws TimeoutException {
 	}
+
+	@Override
+	public StopPriority getStopPriority() {
+		return StopPriority.SUPPORT;
+	}
 }
