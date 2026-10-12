@@ -263,12 +263,27 @@
       <artifactId>progressbar</artifactId>
       <version>0.6.0</version>
     </dependency>
-    
+    <dependency>
+      <groupId>com.google.cloud.sql</groupId>
+      <artifactId>mysql-socket-factory-connector-j-8</artifactId>
+      <version>1.19.1</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api</groupId>
+      <artifactId>gax</artifactId>
+      <version>2.56.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.api</groupId>
+      <artifactId>gax-grpc</artifactId>
+      <version>2.56.0</version>
+    </dependency>
+
     <!-- producer libs -->
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-bigquerystorage</artifactId>
-      <version>2.40.0</version>
+      <version>3.10.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.cloud</groupId>
@@ -313,7 +328,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-pubsub</artifactId>
-      <version>1.132.3</version>
+      <version>1.134.0</version>
     </dependency>
     <dependency>
       <groupId>io.nats</groupId>
