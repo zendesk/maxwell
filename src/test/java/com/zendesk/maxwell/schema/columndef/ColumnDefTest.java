@@ -395,6 +395,19 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
+	public void TestWideBit() throws ColumnDefCastException {
+		ColumnDef d = build("bit", true);
+		assertThat(d, instanceOf(BitColumnDef.class));
+
+		// bit 31
+		assertThat(d.toSQL(new byte[]{0x00, 0x00, 0x00, (byte) 0x80, 0x00, 0x00, 0x00, 0x00}), is("2147483648"));
+		// bit 32
+		assertThat(d.toSQL(new byte[]{0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00}), is("4294967296"));
+		// bit 62
+		assertThat(d.toSQL(new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40}), is("4611686018427387904"));
+	}
+
+	@Test
 	public void testEquality() throws ColumnDefCastException {
 		ColumnDef a = ColumnDef.build("bar", "utf8", "varchar", (short) 1, false, null, null);
 		ColumnDef b = ColumnDef.build("bar", "utf8", "varchar", (short) 1, false, null, null);

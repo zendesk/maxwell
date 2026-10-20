@@ -49,7 +49,7 @@ public class BitColumnDef extends ColumnDef {
 		long res = 0;
 
 		for (int i = 0; i < bytes.length; i++)
-			res += ((bytes[i] & 0xFF) << ( i * 8 ));
+			res += (((long) (bytes[i] & 0xFF)) << (i * 8));
 
 		return res;
 	}
