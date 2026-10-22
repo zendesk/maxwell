@@ -32,7 +32,7 @@ public class TaskManagerTest {
 			log.add(new Event(EventType.AWAIT_STOP, this.name));
 		}
 	}
-	enum EventType { REQUEST_STOP, AWAIT_STOP };
+	enum EventType { REQUEST_STOP, AWAIT_STOP }
 
 	class UnstoppableTask implements StoppableTask {
 		UnstoppableTask() {

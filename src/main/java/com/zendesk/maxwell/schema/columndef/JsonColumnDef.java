@@ -20,11 +20,10 @@ public class JsonColumnDef extends ColumnDef {
 	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		String jsonString;
 
-		if ( value instanceof String ) {
-			return new RawJSONString((String) value);
-		} else if ( value instanceof byte[] ){
+		if ( value instanceof String string ) {
+			return new RawJSONString(string);
+		} else if ( value instanceof byte[] bytes ){
 			try {
-				byte[] bytes = (byte[]) value;
 				jsonString = bytes.length > 0 ? JsonBinary.parseAsString(bytes) : "null";
 				return new RawJSONString(jsonString);
 			} catch (IOException e) {

@@ -19,8 +19,7 @@ public class DateTimeColumnDef extends ColumnDefWithLength {
 
 	protected String formatValue(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		// special case for those broken mysql dates.
-		if ( value instanceof Long ) {
-			Long v = (Long) value;
+		if ( value instanceof Long v ) {
 			if ( v == Long.MIN_VALUE || (v == 0L && isTimestamp) ) {
 				if ( config.zeroDatesAsNull )
 					return null;

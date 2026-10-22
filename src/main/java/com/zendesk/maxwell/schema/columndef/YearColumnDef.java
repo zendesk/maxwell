@@ -17,9 +17,9 @@ public class YearColumnDef extends ColumnDef {
 
 	@Override
 	public Object asJSON(Object value, MaxwellOutputConfig outputConfig) {
-		if ( value instanceof Date ) {
+		if ( value instanceof java.sql.Date date ) {
 			Calendar calendar = Calendar.getInstance();
-			calendar.setTime(( java.sql.Date ) value);
+			calendar.setTime(date);
 			return calendar.get(Calendar.YEAR);
 		}
 		return value;

@@ -50,7 +50,7 @@ public class KafkaCallbackTest {
 		MaxwellContext context = makeContext(new MaxwellConfig());
 		KafkaCallback callback = makeCallback(context, cc, null, null);
 		Exception error = new NotEnoughReplicasException("blah");
-		callback.onCompletion(new RecordMetadata(new TopicPartition("topic", 1), 1, 1, 1, new Long(1), 1, 1), error);
+		callback.onCompletion(new RecordMetadata(new TopicPartition("topic", 1), 1, 1, 1, Long.valueOf(1), 1, 1), error);
 		verify(cc).markCompleted();
 	}
 
@@ -64,7 +64,7 @@ public class KafkaCallbackTest {
 		KafkaCallback callback = makeCallback(context, cc, producer, null);
 
 		Exception error = new NotEnoughReplicasException("blah");
-		callback.onCompletion(new RecordMetadata(new TopicPartition("topic", 1), 1, 1, 1, new Long(1), 1, 1), error);
+		callback.onCompletion(new RecordMetadata(new TopicPartition("topic", 1), 1, 1, 1, Long.valueOf(1), 1, 1), error);
 		verify(context).terminate(error);
 	}
 
@@ -79,7 +79,7 @@ public class KafkaCallbackTest {
 		KafkaCallback callback = makeCallback(context, cc, producer, id);
 
 		Exception error = new RecordTooLargeException();
-		RecordMetadata recordMetadata = new RecordMetadata(new TopicPartition("topic", 1), 1, 1, 1, new Long(1), 1, 1);
+		RecordMetadata recordMetadata = new RecordMetadata(new TopicPartition("topic", 1), 1, 1, 1, Long.valueOf(1), 1, 1);
 		callback.onCompletion(recordMetadata, error);
 
 		ArgumentCaptor<KafkaCallback> cbCaptor = ArgumentCaptor.forClass(KafkaCallback.class);
@@ -102,7 +102,7 @@ public class KafkaCallbackTest {
 		KafkaCallback callback = makeCallback(context, cc, producer, id);
 
 		Exception error = new NotEnoughReplicasException("blah");
-		RecordMetadata recordMetadata = new RecordMetadata(new TopicPartition("topic", 1), 1, 1, 1, new Long(1), 1, 1);
+		RecordMetadata recordMetadata = new RecordMetadata(new TopicPartition("topic", 1), 1, 1, 1, Long.valueOf(1), 1, 1);
 		callback.onCompletion(recordMetadata, error);
 
 		ArgumentCaptor<KafkaCallback> cbCaptor = ArgumentCaptor.forClass(KafkaCallback.class);
@@ -123,7 +123,7 @@ public class KafkaCallbackTest {
 		KafkaCallback callback = makeCallback(context, cc, producer, id);
 
 		Exception error = new RecordTooLargeException();
-		RecordMetadata recordMetadata = new RecordMetadata(new TopicPartition("topic", 1), 1, 1, 1, new Long(1), 1, 1);
+		RecordMetadata recordMetadata = new RecordMetadata(new TopicPartition("topic", 1), 1, 1, 1, Long.valueOf(1), 1, 1);
 		callback.onCompletion(recordMetadata, error);
 
 		verify(cc).markCompleted();

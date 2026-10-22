@@ -71,8 +71,10 @@ class PubsubCallback implements ApiFutureCallback<String> {
     this.succeededMessageMeter.mark();
 
     if ( LOGGER.isDebugEnabled() ) {
-      LOGGER.debug("->  {}\n" +
-			  "    {}\n",
+      LOGGER.debug("""
+			  ->  {}
+			      {}
+			  """,
 			  this.json, this.position);
     }
 

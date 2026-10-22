@@ -73,7 +73,7 @@ class SQSCallback implements AsyncHandler<SendMessageRequest, SendMessageResult>
 		} else {
 			cc.markCompleted();
 		}
-	};
+	}
 
 	@Override
 	public void onSuccess(SendMessageRequest request, SendMessageResult result) {

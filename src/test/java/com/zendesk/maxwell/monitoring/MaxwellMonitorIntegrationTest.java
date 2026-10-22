@@ -8,6 +8,7 @@ import org.junit.Test;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class MaxwellMonitorIntegrationTest extends MaxwellTestWithIsolatedServer
 	private boolean probeHTTP() {
 		try {
 			// Create a neat value object to hold the URL
-			URL url = new URL("http://localhost:22222/metrics");
+			URL url = URI.create("http://localhost:22222/metrics").toURL();
 
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			InputStream responseStream = connection.getInputStream();

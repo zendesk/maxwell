@@ -3,7 +3,7 @@ package com.zendesk.maxwell.schema.ddl;
 import com.zendesk.maxwell.schema.Table;
 
 public class ColumnPosition {
-	enum Position { FIRST, AFTER, DEFAULT };
+	enum Position { FIRST, AFTER, DEFAULT }
 	public static final int AFTER_NOT_FOUND = -999;
 
 	public Position position;

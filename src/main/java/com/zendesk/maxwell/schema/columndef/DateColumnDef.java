@@ -23,13 +23,13 @@ public class DateColumnDef extends ColumnDef {
 
 	@Override
 	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
-		if ( value instanceof String ) {
+		if ( value instanceof String string ) {
 			// bootstrapper just gives up on bothering with date processing
-			if ( config.zeroDatesAsNull && "0000-00-00".equals((String) value) )
+			if ( config.zeroDatesAsNull && "0000-00-00".equals(string) )
 				return null;
 			else
 				return value;
-		} else if ( value instanceof Long && (Long) value == Long.MIN_VALUE ) {
+		} else if ( value instanceof Long long1 && long1 == Long.MIN_VALUE ) {
 			if ( config.zeroDatesAsNull )
 				return null;
 			else

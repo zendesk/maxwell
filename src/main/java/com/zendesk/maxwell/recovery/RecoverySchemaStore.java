@@ -54,6 +54,6 @@ public class RecoverySchemaStore implements SchemaStore {
 
 	@Override
 	public Long getSchemaID() throws SchemaStoreException {
-		return new Long(0);
+		return Long.valueOf(0);
 	}
 }

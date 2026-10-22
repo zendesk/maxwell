@@ -18,15 +18,11 @@ public class BitColumnDef extends ColumnDef {
 	@Override
 	public Object asJSON(Object value, MaxwellOutputConfig outputConfig) throws ColumnDefCastException {
 		byte[] bytes;
-		if( value instanceof Boolean ){
-			bytes = new byte[]{(byte) (( Boolean ) value ? 1 : 0)};
-		} else if ( value instanceof BitSet ) {
-			BitSet bs = (BitSet) value;
-			bytes = bs.toByteArray();
-		} else if ( value instanceof byte[] ){
-			bytes = (byte[]) value;
-		} else {
-			throw new ColumnDefCastException(this, value);
+		switch (value) {
+			case Boolean boolean1 -> bytes = new byte[]{(byte) (boolean1 ? 1 : 0)};
+			case BitSet bs -> bytes = bs.toByteArray();
+			case byte[] bytes1 -> bytes = bytes1;
+			case null, default -> throw new ColumnDefCastException(this, value);
 		}
 		if ( bytes.length == 8 && ((bytes[7] & 0xFF) > 127) ) {
 			return bytesToBigInteger(bytes);

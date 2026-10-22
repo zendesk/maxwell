@@ -40,7 +40,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		list = getRowsForSQL(input);
-		String json = list.get(0).toJSON(outputConfig);
+		String json = list.getFirst().toJSON(outputConfig);
 
 		Map<String,Object> output = MaxwellTestJSON.parseJSON(json);
 		Map<String, Object> decrypted = MaxwellTestJSON.parseEncryptedJSON(output, outputConfig.secretKey);
@@ -63,7 +63,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		list = getRowsForSQL(input);
-		String json = list.get(0).toJSON(outputConfig);
+		String json = list.getFirst().toJSON(outputConfig);
 
 		Map<String,Object> output = MaxwellTestJSON.parseJSON(json);
 		Map<String, Object> decrypted = MaxwellTestJSON.parseEncryptedJSON(output, outputConfig.secretKey);
@@ -94,7 +94,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"minimal\",\"pk.id\":1,\"pk.text_field\":\"hello\"}";
 		list = getRowsForSQL(input);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
+		assertThat(list.getFirst().pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
 	}
 
 	@Test
@@ -105,7 +105,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"pksen\",\"pk.id\":1}";
 		list = getRowsForSQL(null, input, before);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
+		assertThat(list.getFirst().pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
 	}
 
 	@Test
@@ -116,7 +116,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"pksen\",\"pk.id\":[\"android\"]}";
 		list = getRowsForSQL(null, input, before);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
+		assertThat(list.getFirst().pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
 	}
 
 	@Test
@@ -126,7 +126,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String expectedJSON = "[\"shard_1\",\"minimal\",[{\"id\":1},{\"text_field\":\"hello\"}]]";
 		list = getRowsForSQL(input);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.ARRAY), is(expectedJSON));
+		assertThat(list.getFirst().pkToJson(RowMap.KeyFormat.ARRAY), is(expectedJSON));
 	}
 
 	@Test
@@ -140,7 +140,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		outputConfig.includesGtidPosition = true;
 
 		list = getRowsForSQL(input);
-		String json = list.get(0).toJSON(outputConfig);
+		String json = list.getFirst().toJSON(outputConfig);
 
 		// Binlog
 		if (MaxwellTestSupport.inGtidMode()) {
@@ -171,7 +171,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		outputConfig.includesServerId = true;
 
 		list = getRowsForSQL(input);
-		String json = list.get(0).toJSON(outputConfig);
+		String json = list.getFirst().toJSON(outputConfig);
 
 		assertTrue(Pattern.matches(".*\"server_id\":"+actualServerId+",.*", json));
 	}
@@ -191,7 +191,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		outputConfig.includesThreadId = true;
 
 		list = getRowsForSQL(input);
-		String json = list.get(0).toJSON(outputConfig);
+		String json = list.getFirst().toJSON(outputConfig);
 
 		assertTrue(Pattern.matches(".*\"thread_id\":"+actualThreadId+",.*", json));
 	}
@@ -216,13 +216,13 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		assertThat(list.size(), is(2));
 
-		r = list.get(0);
+		r = list.getFirst();
 		assertThat(r.getTable(), is("bars"));
 
 		filter.addRule("exclude: *.*, include: shard_1.minimal");
 		list = getRowsForSQL(filter, insertSQL);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).getTable(), is("minimal"));
+		assertThat(list.getFirst().getTable(), is("minimal"));
 	}
 
 	@Test
@@ -234,7 +234,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		assertThat(list.size(), is(1));
 
-		assertThat(list.get(0).getTable(), is("bars"));
+		assertThat(list.getFirst().getTable(), is("bars"));
 	}
 
 	@Test
@@ -248,7 +248,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		assertThat(list.size(), is(1));
 
-		assertThat(list.get(0).getTable(), is("minimal"));
+		assertThat(list.getFirst().getTable(), is("minimal"));
 	}
 
 	@Test
@@ -262,7 +262,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		assertThat(list.size(), is(1));
 
-		assertThat(list.get(0).getTable(), is("bars"));
+		assertThat(list.getFirst().getTable(), is("bars"));
 	}
 
 	@Test
@@ -405,7 +405,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		list = getRowsForSQL(testAlterSQL);
 
-		assertThat(list.get(0).getTable(), is("minimal"));
+		assertThat(list.getFirst().getTable(), is("minimal"));
 	}
 
 	@Test
@@ -456,8 +456,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 			assertNotNull(r.getXid());
 		}
 
-		assertEquals(list.get(0).getXid(), list.get(1).getXid());
-		assertFalse(list.get(0).isTXCommit());
+		assertEquals(list.getFirst().getXid(), list.get(1).getXid());
+		assertFalse(list.getFirst().isTXCommit());
 		assertTrue(list.get(1).isTXCommit());
 
 		assertFalse(list.get(2).isTXCommit());
@@ -549,7 +549,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(lowerCaseServer, sql, null, null);
 		assertThat(rows.size(), is(1));
-		assertThat(rows.get(0).getTable(), is("tootootwee"));
+		assertThat(rows.getFirst().getTable(), is("tootootwee"));
 	}
 
 	@Test
@@ -647,7 +647,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		Filter filter = new Filter();
 		List<RowMap> rows = getRowsForSQL(filter, insertDBSql, createDBSql);
 		String ordered_data = "\"data\":\\{\"id\":1,\"account_id\":2,\"user_id\":3\\}";
-		assertTrue(Pattern.compile(ordered_data).matcher(rows.get(0).toJSON()).find());
+		assertTrue(Pattern.compile(ordered_data).matcher(rows.getFirst().toJSON()).find());
 	}
 
 	@Test

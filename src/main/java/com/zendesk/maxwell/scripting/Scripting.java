@@ -5,7 +5,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.LinkedHashMap;
 
 import com.zendesk.maxwell.row.HeartbeatRowMap;
@@ -38,7 +38,7 @@ public class Scripting {
 		ScriptEngineManager manager = new ScriptEngineManager();
 		ScriptEngine engine = manager.getEngineByName("nashorn");
 
-		String externJS = new String(Files.readAllBytes(Paths.get(filename)));
+		String externJS = new String(Files.readAllBytes(Path.of(filename)));
 		engine.put("logger", LOGGER);
 		engine.eval(externJS);
 
@@ -53,10 +53,10 @@ public class Scripting {
 	}
 
 	public void invoke(RowMap row) {
-		if ( row instanceof HeartbeatRowMap && processHeartbeatFunc != null )
-			processHeartbeatFunc.call(null, new WrappedHeartbeatMap((HeartbeatRowMap) row), globalJavascriptState);
-		else if ( row instanceof DDLMap && processDDLFunc != null )
-			processDDLFunc.call(null, new WrappedDDLMap((DDLMap) row), globalJavascriptState);
+		if ( row instanceof HeartbeatRowMap map1 && processHeartbeatFunc != null )
+			processHeartbeatFunc.call(null, new WrappedHeartbeatMap(map1), globalJavascriptState);
+		else if ( row instanceof DDLMap map && processDDLFunc != null )
+			processDDLFunc.call(null, new WrappedDDLMap(map), globalJavascriptState);
 		else if ( row instanceof RowMap && processRowFunc != null )
 			processRowFunc.call(null, new WrappedRowMap(row), globalJavascriptState);
 	}

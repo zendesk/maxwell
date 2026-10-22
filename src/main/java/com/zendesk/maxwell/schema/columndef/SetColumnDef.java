@@ -28,11 +28,10 @@ public class SetColumnDef extends EnumeratedColumnDef {
 	}
 
 	private ArrayList<String> asList(Object value) throws ColumnDefCastException {
-		if ( value instanceof String ) {
-			return new ArrayList<>(Arrays.asList((( String ) value).split(",")));
-		} else if ( value instanceof Long ) {
+		if ( value instanceof String string ) {
+			return new ArrayList<>(Arrays.asList(string.split(",")));
+		} else if ( value instanceof Long v ) {
 			ArrayList<String> values = new ArrayList<>();
-			long v = (Long) value;
 			List<String> enumValues = getEnumValues();
 			for (int i = 0; i < enumValues.size(); i++) {
 				if (((v >> i) & 1) == 1) {

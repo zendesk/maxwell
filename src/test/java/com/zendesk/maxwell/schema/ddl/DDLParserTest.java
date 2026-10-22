@@ -8,7 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,11 +29,11 @@ public class DDLParserTest {
 	}
 
 	private TableAlter parseAlter(String sql) {
-		return (TableAlter) parse(sql).get(0);
+		return (TableAlter) parse(sql).getFirst();
 	}
 
 	private TableCreate parseCreate(String sql) {
-		return (TableCreate) parse(sql).get(0);
+		return (TableCreate) parse(sql).getFirst();
 	}
 
 	@Test
@@ -53,7 +53,7 @@ public class DDLParserTest {
 		TableAlter a = parseAlter("ALTER TABLE `foo`.`bar` ADD column `col1` text AFTER `afterCol`");
 		assertThat(a, is(not(nullValue())));
 
-		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
+		AddColumnMod m = (AddColumnMod) a.columnMods.getFirst();
 		assertThat(m.name, is("col1"));
 
 		assertThat(m.definition, not(nullValue()));
@@ -66,7 +66,7 @@ public class DDLParserTest {
 	public void testIntColumnTypes_1() {
 		TableAlter a = parseAlter("alter table foo add column `int` int(11) unsigned not null AFTER `afterCol`");
 
-		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
+		AddColumnMod m = (AddColumnMod) a.columnMods.getFirst();
 		assertThat(m.name, is("int"));
 
 		assertThat(m.definition, instanceOf(IntColumnDef.class));
@@ -80,7 +80,7 @@ public class DDLParserTest {
 	public void testIntColumnTypes_2() {
 		TableAlter a = parseAlter("alter table `fie` add column baz bigINT null");
 
-		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
+		AddColumnMod m = (AddColumnMod) a.columnMods.getFirst();
 		assertThat(m.name, is("baz"));
 
 		BigIntColumnDef b = (BigIntColumnDef) m.definition;
@@ -93,7 +93,7 @@ public class DDLParserTest {
 	public void testVarchar() {
 		TableAlter a = parseAlter("alter table no.no add column mocha varchar(255) character set latin1 not null");
 
-		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
+		AddColumnMod m = (AddColumnMod) a.columnMods.getFirst();
 		assertThat(m.name, is("mocha"));
 
 		StringColumnDef b = (StringColumnDef) m.definition;
@@ -105,11 +105,11 @@ public class DDLParserTest {
 	public void testSRID() {
 		TableAlter a = parseAlter("alter table foo add column `location` point NOT NULL SRID 4326");
 
-		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
+		AddColumnMod m = (AddColumnMod) a.columnMods.getFirst();
 		assertThat(m.name, is("location"));
 
 		GeometryColumnDef b = (GeometryColumnDef) m.definition;
-		assertThat(b.getType(), is("point"));;
+		assertThat(b.getType(), is("point"));
 		assertThat(b.getName(), is("location"));
 	}
 
@@ -117,7 +117,7 @@ public class DDLParserTest {
 	public void testText() {
 		TableAlter a = parseAlter("alter table no.no add column mocha TEXT character set 'utf8' collate 'utf8_foo'");
 
-		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
+		AddColumnMod m = (AddColumnMod) a.columnMods.getFirst();
 		StringColumnDef b = (StringColumnDef) m.definition;
 		assertThat(b.getType(), is("text"));
 		assertThat(b.getCharset(), is("utf8"));
@@ -127,7 +127,7 @@ public class DDLParserTest {
 	public void testDefault() {
 		TableAlter a = parseAlter("alter table no.no add column mocha TEXT default 'hello'''''");
 
-		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
+		AddColumnMod m = (AddColumnMod) a.columnMods.getFirst();
 		StringColumnDef b = (StringColumnDef) m.definition;
 		assertThat(b.getType(), is("text"));
 	}
@@ -143,7 +143,7 @@ public class DDLParserTest {
 				+ "column_format fixed "
 				+ "storage disk");
 
-		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
+		AddColumnMod m = (AddColumnMod) a.columnMods.getFirst();
 		StringColumnDef b = (StringColumnDef) m.definition;
 		assertThat(b.getType(), is("text"));
 		assertThat(b.getCharset(), is("utf8"));
@@ -153,7 +153,7 @@ public class DDLParserTest {
 	public void testMultipleColumns() {
 		TableAlter a = parseAlter("alter table bar add column m int(11) unsigned not null, add p varchar(255)");
 		assertThat(a.columnMods.size(), is(2));
-		assertThat(a.columnMods.get(0).name, is("m"));
+		assertThat(a.columnMods.getFirst().name, is("m"));
 		assertThat(a.columnMods.get(1).name, is("p"));
 	}
 
@@ -161,7 +161,7 @@ public class DDLParserTest {
 	public void testMultipleColumnWithParens() {
 		TableAlter a = parseAlter("alter table bar add column (m int(11) unsigned not null, p varchar(255))");
 		assertThat(a.columnMods.size(), is(2));
-		assertThat(a.columnMods.get(0).name, is("m"));
+		assertThat(a.columnMods.getFirst().name, is("m"));
 		assertThat(a.columnMods.get(1).name, is("p"));
 	}
 
@@ -291,7 +291,7 @@ public class DDLParserTest {
 				List<SchemaChange> changes = parse(s);
 				assertThat("Expected '" + s + "' to return non-null changes", changes, not(nullValue()));
 				assertThat("Expected '" + s + "' to return at least one change", changes.size(), is(not(0)));
-				SchemaChange parsed = changes.get(0);
+				SchemaChange parsed = changes.getFirst();
 				assertThat("Expected " + s + "to parse", parsed, not(nullValue()));
 			} catch ( MaxwellSQLSyntaxError e ) {
 				assertThat("Expected '" + s + "' to parse, but got: " + e.getMessage(), true, is(false));
@@ -341,9 +341,9 @@ public class DDLParserTest {
 		TableAlter a = parseAlter("alter table c CHANGE column `foo` bar int(20) unsigned default 'foo' not null");
 
 		assertThat(a.columnMods.size(), is(1));
-		assertThat(a.columnMods.get(0), instanceOf(ChangeColumnMod.class));
+		assertThat(a.columnMods.getFirst(), instanceOf(ChangeColumnMod.class));
 
-		ChangeColumnMod c = (ChangeColumnMod) a.columnMods.get(0);
+		ChangeColumnMod c = (ChangeColumnMod) a.columnMods.getFirst();
 		assertThat(c.name, is("foo"));
 		assertThat(c.definition.getName(), is("bar"));
 		assertThat(c.definition.getType(), is("int"));
@@ -352,7 +352,7 @@ public class DDLParserTest {
 	@Test
 	public void testModifyColumn() throws IOException {
 		TableAlter a = parseAlter("alter table c MODIFY column `foo` bigint(20) unsigned default 'foo' not null");
-		ChangeColumnMod c = (ChangeColumnMod) a.columnMods.get(0);
+		ChangeColumnMod c = (ChangeColumnMod) a.columnMods.getFirst();
 
 		assertThat(c.name, is("foo"));
 		assertThat(c.definition.getName(), is("foo"));
@@ -367,9 +367,9 @@ public class DDLParserTest {
 
 		assertThat(a.columnMods.size(), is(1));
 
-		assertThat(a.columnMods.get(0), instanceOf(RemoveColumnMod.class));
+		assertThat(a.columnMods.getFirst(), instanceOf(RemoveColumnMod.class));
 
-		remove = (RemoveColumnMod) a.columnMods.get(0);
+		remove = (RemoveColumnMod) a.columnMods.getFirst();
 
 		assertThat(remove.name, is("drop"));
 	}
@@ -406,7 +406,7 @@ public class DDLParserTest {
 		assertThat(c.table, is("foo"));
 
 		assertThat(c.columns.size(), is(2));
-		assertThat(c.columns.get(0).getName(), is("id"));
+		assertThat(c.columns.getFirst().getName(), is("id"));
 		assertThat(c.columns.get(1).getName(), is("textcol"));
 	}
 
@@ -471,7 +471,7 @@ public class DDLParserTest {
 		List<SchemaChange> changes = parse("DROP TABLE IF exists `foo`.bar, `bar`.baz");
 		assertThat(changes.size(), is(2));
 
-		TableDrop d = (TableDrop) changes.get(0);
+		TableDrop d = (TableDrop) changes.getFirst();
 		assertThat(d.table, is("bar"));
 		assertThat(d.database, is("foo"));
 
@@ -482,7 +482,7 @@ public class DDLParserTest {
 		// mysql escapes a backtick inside a quoted identifier by doubling it, so
 		// `otherdbcopy.``otherdbtable` names the table  otherdbcopy.`otherdbtable
 		List<SchemaChange> changes = parse("drop table actualdb.`otherdbcopy.``otherdbtable`");
-		TableDrop d = (TableDrop) changes.get(0);
+		TableDrop d = (TableDrop) changes.getFirst();
 		assertThat(d.database, is("actualdb"));
 		assertThat(d.table, is("otherdbcopy.`otherdbtable"));
 
@@ -490,13 +490,13 @@ public class DDLParserTest {
 		TableCreate c = parseCreate("create table `db``1`.`tbl``1` (`col``1` int)");
 		assertThat(c.database, is("db`1"));
 		assertThat(c.table, is("tbl`1"));
-		assertThat(c.columns.get(0).getName(), is("col`1"));
+		assertThat(c.columns.getFirst().getName(), is("col`1"));
 	}
 
 	@Test
 	public void testCreateDatabase() {
 		List<SchemaChange> changes = parse("CREATE DATABASE if not exists `foo` default character set='latin1'");
-		DatabaseCreate create = (DatabaseCreate) changes.get(0);
+		DatabaseCreate create = (DatabaseCreate) changes.getFirst();
 		assertThat(create.database, is("foo"));
 		assertThat(create.charset, is("latin1"));
 	}
@@ -504,7 +504,7 @@ public class DDLParserTest {
 	@Test
 	public void testCreateSchema() {
 		List<SchemaChange> changes = parse("CREATE SCHEMA if not exists `foo`");
-		DatabaseCreate create = (DatabaseCreate) changes.get(0);
+		DatabaseCreate create = (DatabaseCreate) changes.getFirst();
 		assertThat(create.database, is("foo"));
 	}
 
@@ -541,13 +541,13 @@ public class DDLParserTest {
 	@Test
 	public void testCharsetPositionIndependence() {
 		TableCreate create = parseCreate("CREATE TABLE `foo` (id varchar(1) NOT NULL character set 'foo')");
-		ColumnDef c = create.columns.get(0);
+		ColumnDef c = create.columns.getFirst();
 		assertThat(c, is(instanceOf(StringColumnDef.class)));
 
 		assertThat(((StringColumnDef) c).getCharset(), is("foo"));
 
 		create = parseCreate("CREATE TABLE `foo` (id varchar(1) character set 'foo' NOT NULL)");
-		c = create.columns.get(0);
+		c = create.columns.getFirst();
 		assertThat(c, is(instanceOf(StringColumnDef.class)));
 		assertThat(((StringColumnDef) c).getCharset(), is("foo"));
 	}
@@ -587,7 +587,7 @@ public class DDLParserTest {
 	@Test
 	public void testMysqlTestFixedSQL() throws Exception {
 		int i = 1;
-		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-fixed.sql"), Charset.defaultCharset());
+		List<String> lines = Files.readAllLines(Path.of(getSQLDir() + "/ddl/mysql-test-fixed.sql"), Charset.defaultCharset());
 		for ( String sql: lines ) {
 				parse(sql);
 		}
@@ -597,7 +597,7 @@ public class DDLParserTest {
 	public void testMysqlTestPartitionSQL() throws Exception {
 		int i = 1;
 		boolean outputFirst = false;
-		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-partition.sql"), Charset.defaultCharset());
+		List<String> lines = Files.readAllLines(Path.of(getSQLDir() + "/ddl/mysql-test-partition.sql"), Charset.defaultCharset());
 		for ( String sql: lines ) {
 			try {
 				parse(sql);
@@ -610,7 +610,7 @@ public class DDLParserTest {
 
 	@Test
 	public void testMysqlGIS() throws Exception {
-		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-gis.sql"), Charset.defaultCharset());
+		List<String> lines = Files.readAllLines(Path.of(getSQLDir() + "/ddl/mysql-test-gis.sql"), Charset.defaultCharset());
 		for ( String sql: lines ) {
 			parse(sql);
 		}
@@ -620,7 +620,7 @@ public class DDLParserTest {
 	@Test
 	public void testMysqlTestSQL() throws Exception {
 		int i = 1;
-		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-errors.sql"), Charset.defaultCharset());
+		List<String> lines = Files.readAllLines(Path.of(getSQLDir() + "/ddl/mysql-test-errors.sql"), Charset.defaultCharset());
 		for ( String sql: lines ) {
 			parse(sql);
 		}
@@ -634,7 +634,7 @@ public class DDLParserTest {
 
 		int nFixed = 0, nErr = 0;
 		List<String> assertions = new ArrayList<>();
-		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test.sql"), Charset.defaultCharset());
+		List<String> lines = Files.readAllLines(Path.of(getSQLDir() + "/ddl/mysql-test.sql"), Charset.defaultCharset());
 		for ( String sql: lines ) {
 			try {
 				parse(sql);
@@ -647,16 +647,17 @@ public class DDLParserTest {
 				System.err.println(sql);
 			}
 		}
-		System.out.println(nFixed + " fixed, " + nErr + " remain.");
+		IO.println(nFixed + " fixed, " + nErr + " remain.");
 	}
 
 	@Test
 	public void testPolardbXCreateIndexSQL(){
 
 		List<SchemaChange> changes = parse(
-				"# POLARX_ORIGIN_SQL=CREATE INDEX device_id_idx ON event_tracking_info_extra (event, create_time)\n" +
-				"# POLARX_TSO=698905756181096044815201227773638819850000000000000000\n" +
-				"CREATE INDEX device_id_idx ON event_tracking_info_extra (event, create_time)");
+				"""
+				# POLARX_ORIGIN_SQL=CREATE INDEX device_id_idx ON event_tracking_info_extra (event, create_time)
+				# POLARX_TSO=698905756181096044815201227773638819850000000000000000
+				CREATE INDEX device_id_idx ON event_tracking_info_extra (event, create_time)""");
 
 		assertThat(changes,is(nullValue()));
 

@@ -93,8 +93,7 @@ public class StringColumnDef extends ColumnDef {
 
 		if ( value instanceof String ) {
 			return value;
-		} else if ( value instanceof byte[] ) {
-			byte[] b = (byte[]) value;
+		} else if ( value instanceof byte[] b ) {
 			if (charset.equals("binary")) {
 				return Base64.encodeBase64String(b);
 			} else {

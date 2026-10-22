@@ -93,7 +93,7 @@ public class MysqlIsolatedServer {
 					String l = null;
 					try {
 						l = errReader.readLine();
-					} catch ( IOException e) {};
+					} catch ( IOException e) {}
 
 					if (l == null)
 						break;
@@ -232,13 +232,13 @@ public class MysqlIsolatedServer {
 
 	public void stop() {
 		try {
-			Runtime.getRuntime().exec("kill -STOP " + this.serverPid);
+			Runtime.getRuntime().exec(("kill -STOP " + this.serverPid).split(" "));
 		} catch (IOException e) {}
 	}
 
 	public void resume() {
 		try {
-			Runtime.getRuntime().exec("kill -CONT " + this.serverPid);
+			Runtime.getRuntime().exec(("kill -CONT " + this.serverPid).split(" "));
 		} catch (IOException e) {}
 	}
 
@@ -303,7 +303,7 @@ public class MysqlIsolatedServer {
 
 	public void shutDown() {
 		try {
-			Runtime.getRuntime().exec("kill " + this.serverPid);
+			Runtime.getRuntime().exec(("kill " + this.serverPid).split(" "));
 		} catch ( IOException e ) {}
 	}
 

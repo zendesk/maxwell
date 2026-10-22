@@ -146,7 +146,7 @@ public final class MurmurHash3 {
 				k2 = code;
 				bits = 8;
 
-				/***
+				/**
 				 // optimized ascii implementation (currently slower!!! code size?)
 				 if (shift == 24) {
 				 k1 = k1 | (code << 24);

@@ -473,7 +473,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String[] sql = {"create table TestTableCreate1 ( account_id int, text_field text )"};
 		List<RowMap> rows = getRowsForDDLTransaction(sql, null);
 		assertEquals(1, rows.size());
-		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"TestTableCreate1\""));
+		assertTrue(rows.getFirst().toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"TestTableCreate1\""));
 	}
 
 	@Test
@@ -481,7 +481,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String[] sql = {"create table 測試表格 ( 測試欄位一 int, 測試欄位二 text )"};
 		List<RowMap> rows = getRowsForDDLTransaction(sql, null);
 		assertEquals(1, rows.size());
-		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"測試表格\""));
+		assertTrue(rows.getFirst().toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"測試表格\""));
 	}
 
 	@Test
@@ -506,7 +506,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		};
 		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeTable("TestTableCreate4"));
 		assertEquals(1, rows.size());
-		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"TestTableCreate3\""));
+		assertTrue(rows.getFirst().toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"TestTableCreate3\""));
 	}
 
 	@Test
@@ -517,7 +517,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		};
 		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeTable("測試表格四"));
 		assertEquals(1, rows.size());
-		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"測試表格三\""));
+		assertTrue(rows.getFirst().toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"測試表格三\""));
 	}
 
 
@@ -530,7 +530,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		};
 		List<RowMap> rows = getRowsForDDLTransaction(sql, null);
 		assertEquals(2, rows.size());
-		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"database-create\",\"database\":\"TestDatabaseCreate1\""));
+		assertTrue(rows.getFirst().toJSON(ddlOutputConfig()).contains("\"type\":\"database-create\",\"database\":\"TestDatabaseCreate1\""));
 		assertTrue(rows.get(1).toJSON(ddlOutputConfig()).contains("\"type\":\"database-alter\",\"database\":\"TestDatabaseCreate1\""));
 	}
 
@@ -543,7 +543,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		};
 		List<RowMap> rows = getRowsForDDLTransaction(sql, null);
 		assertEquals(2, rows.size());
-		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"database-create\",\"database\":\"測試資料庫一\""));
+		assertTrue(rows.getFirst().toJSON(ddlOutputConfig()).contains("\"type\":\"database-create\",\"database\":\"測試資料庫一\""));
 		assertTrue(rows.get(1).toJSON(ddlOutputConfig()).contains("\"type\":\"database-alter\",\"database\":\"測試資料庫一\""));
 	}
 
@@ -570,7 +570,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		};
 		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeTable("chicken"));
 		assertEquals(2, rows.size());
-		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"database-create\",\"database\":\"TestDatabaseCreate3\""));
+		assertTrue(rows.getFirst().toJSON(ddlOutputConfig()).contains("\"type\":\"database-create\",\"database\":\"TestDatabaseCreate3\""));
 		assertTrue(rows.get(1).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"TestDatabaseCreate3\",\"table\":\"burger\""));
 	}
 
@@ -583,7 +583,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		};
 		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeTable("表格一"));
 		assertEquals(2, rows.size());
-		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"database-create\",\"database\":\"測試資料庫三\""));
+		assertTrue(rows.getFirst().toJSON(ddlOutputConfig()).contains("\"type\":\"database-create\",\"database\":\"測試資料庫三\""));
 		assertTrue(rows.get(1).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"測試資料庫三\",\"table\":\"表格二\""));
 		// test if non-Latin column name outputs correctly
 		assertTrue(rows.get(1).toJSON(ddlOutputConfig()).contains("\"type\":\"int\",\"name\":\"中文欄位\""));

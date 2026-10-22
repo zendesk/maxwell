@@ -71,7 +71,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 	}
 
 	private TableAlter alterStatement() {
-		return (TableAlter)schemaChanges.get(0);
+		return (TableAlter)schemaChanges.getFirst();
 	}
 
 	private String getCharset(List<Column_optionsContext> list) {
@@ -133,7 +133,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 		List<Default_character_setContext> charSet = ctx.alter_database_definition().default_character_set();
 		if ( charSet.size() > 0 ) {
-			alter.charset = unquote_literal(charSet.get(0).charset_name().getText());
+			alter.charset = unquote_literal(charSet.getFirst().charset_name().getText());
 		}
 
 		this.schemaChanges.add(alter);
@@ -248,29 +248,28 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 	@Override
 	public void exitCreate_like_tbl(Create_like_tblContext ctx) {
-		TableCreate tableCreate = (TableCreate) schemaChanges.get(0);
+		TableCreate tableCreate = (TableCreate) schemaChanges.getFirst();
 		tableCreate.likeDB    = getDB(ctx.table_name());
 		tableCreate.likeTable = getTable(ctx.table_name());
 	}
 
 	@Override
 	public void exitCreate_specifications(Create_specificationsContext ctx) {
-		TableCreate tableCreate = (TableCreate) schemaChanges.get(0);
+		TableCreate tableCreate = (TableCreate) schemaChanges.getFirst();
 		tableCreate.columns.addAll(this.columnDefs);
 		tableCreate.pks = this.pkColumns;
 	}
 
 	@Override
 	public void exitCreation_character_set(Creation_character_setContext ctx) {
-		SchemaChange change = schemaChanges.get(0);
+		SchemaChange change = schemaChanges.getFirst();
 
 		/* due to an unfortunate duplication of syntaxes (DEFAULT CHARACTER SET and CHARACTER SET),
 		 * it's possible that a table alter will end up down this parse path (depending on how options are ordered) */
-		if ( change instanceof TableCreate ) {
-			TableCreate tableCreate = (TableCreate) change;
+		if ( change instanceof TableCreate tableCreate ) {
 			tableCreate.charset = unquote_literal(ctx.charset_name().getText());
-		} else if ( change instanceof TableAlter ) {
-			((TableAlter) change).defaultCharset = unquote_literal(ctx.charset_name().getText());
+		} else if ( change instanceof TableAlter alter ) {
+			alter.defaultCharset = unquote_literal(ctx.charset_name().getText());
 		}
 	}
 

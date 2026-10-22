@@ -23,15 +23,14 @@ public class EnumColumnDef extends EnumeratedColumnDef {
 	}
 
 	private String asString(Object value) throws ColumnDefCastException {
-		if ( value instanceof String ) {
-			return ( String ) value;
-		} else if ( value instanceof Integer ) {
-			Integer i = (Integer) value;
+		if ( value instanceof String string ) {
+			return string;
+		} else if ( value instanceof Integer i ) {
 
 			if (i == 0)
 				return null;
 			else
-				return getEnumValues().get(((Integer) value) - 1);
+				return getEnumValues().get(i - 1);
 		} else {
 			throw new ColumnDefCastException(this, value);
 		}

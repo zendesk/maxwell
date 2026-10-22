@@ -3,7 +3,6 @@ package com.zendesk.maxwell.producer;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.FutureCallback;
@@ -61,8 +60,8 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 		this.failedMessageCount.inc();
 		this.failedMessageMeter.mark();
 
-		if(t instanceof UserRecordFailedException) {
-			Attempt last = Iterables.getLast(((UserRecordFailedException) t).getResult().getAttempts());
+		if(t instanceof UserRecordFailedException exception) {
+			Attempt last = Iterables.getLast(exception.getResult().getAttempts());
 			logger.error(String.format("Record failed to put - %s : %s", last.getErrorCode(), last.getErrorMessage()));
 		}
 
@@ -73,21 +72,23 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 		} else {
 			cc.markCompleted();
 		}
-	};
+	}
 
 	@Override
 	public void onSuccess(UserRecordResult result) {
 		this.succeededMessageCount.inc();
 		this.succeededMessageMeter.mark();
 		if(logger.isDebugEnabled()) {
-			logger.debug("->  key:{}, shard id:{}, sequence number:{}\n" +
-							"   {}\n" +
-							"   {}\n",
+			logger.debug("""
+							->  key:{}, shard id:{}, sequence number:{}
+							   {}
+							   {}
+							""",
 					key, result.getShardId(), result.getSequenceNumber(), json, position);
 		}
 
 		cc.markCompleted();
-	};
+	}
 }
 
 public class MaxwellKinesisProducer extends AbstractAsyncProducer {
@@ -107,7 +108,7 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 		this.partitioner = new MaxwellKinesisPartitioner(partitionKey, partitionColumns, partitionFallback, kinesisMd5Keys);
 		this.kinesisStream = kinesisStream;
 
-		Path path = Paths.get("kinesis-producer-library.properties");
+		Path path = Path.of("kinesis-producer-library.properties");
 		if(Files.exists(path) && Files.isRegularFile(path)) {
 			KinesisProducerConfiguration config = KinesisProducerConfiguration.fromPropertiesFile(path.toString());
 			this.kinesisProducer = new KinesisProducer(config);

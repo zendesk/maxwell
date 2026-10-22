@@ -403,7 +403,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		LOGGER.info("New pos: " + newPosition);
 		MysqlSavedSchema newSavedSchema = MysqlSavedSchema.restore(context, newPosition);
 		LOGGER.info("New schema id: " + newSavedSchema.getSchemaID());
-		assertEquals(new Long(oldSchemaId + 1), newSavedSchema.getSchemaID());
+		assertEquals(Long.valueOf(oldSchemaId + 1), newSavedSchema.getSchemaID());
 		assertTrue(newPosition.newerThan(savedSchema.getPosition()));
 
 		MysqlSavedSchema restored = MysqlSavedSchema.restore(context, oldlogPosition);

@@ -83,9 +83,11 @@ class KafkaCallback implements Callback {
 			this.succeededMessageMeter.mark();
 
 			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("->  key:{}, partition:{}, offset:{}\n" +
-								"   {}\n" +
-								"   {}\n",
+				LOGGER.debug("""
+								->  key:{}, partition:{}, offset:{}
+								   {}
+								   {}
+								""",
 						key, md.partition(), md.offset(), this.json, position);
 			}
 			cc.markCompleted();

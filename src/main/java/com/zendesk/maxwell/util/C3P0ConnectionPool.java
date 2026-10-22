@@ -43,8 +43,8 @@ public class C3P0ConnectionPool implements ConnectionPool {
 			// the sql exception thrown here is worthless, it's just
 			// "coudln't get connection from pool."  dig out the goods.
 			Throwable t = cpds.getLastAcquisitionFailureDefaultUser();
-			if ( t instanceof SQLException ) {
-				throw((SQLException) t);
+			if ( t instanceof SQLException exception ) {
+				throw exception;
 			} else {
 				throw new RuntimeException("couldn't get connection from pool", t);
 			}

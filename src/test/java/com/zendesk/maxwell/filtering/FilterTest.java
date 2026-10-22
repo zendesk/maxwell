@@ -22,17 +22,17 @@ public class FilterTest {
 		filters = runParserTest("include:/foo.*/.bar");
 
 		assertEquals(1, filters.size());
-		assertEquals(FilterPatternType.INCLUDE, filters.get(0).getType());
-		assertEquals(Pattern.compile("foo.*").toString(), filters.get(0).getDatabasePattern().toString());
-		assertEquals(Pattern.compile("^bar$").toString(), filters.get(0).getTablePattern().toString());
+		assertEquals(FilterPatternType.INCLUDE, filters.getFirst().getType());
+		assertEquals(Pattern.compile("foo.*").toString(), filters.getFirst().getDatabasePattern().toString());
+		assertEquals(Pattern.compile("^bar$").toString(), filters.getFirst().getTablePattern().toString());
 	}
 
 	@Test
 	public void TestBlacklists() throws Exception {
 		filters = runParserTest("blacklist:foo.*");
 		assertEquals(1, filters.size());
-		assertEquals(FilterPatternType.BLACKLIST, filters.get(0).getType());
-		assertEquals(Pattern.compile("^foo$").toString(), filters.get(0).getDatabasePattern().toString());
+		assertEquals(FilterPatternType.BLACKLIST, filters.getFirst().getType());
+		assertEquals(Pattern.compile("^foo$").toString(), filters.getFirst().getDatabasePattern().toString());
 	}
 
 	@Test
@@ -45,7 +45,7 @@ public class FilterTest {
 		for ( String test : tests ) {
 			filters = runParserTest(test);
 			assertEquals(1, filters.size());
-			assertEquals(Pattern.compile("^foo$").toString(), filters.get(0).getDatabasePattern().toString());
+			assertEquals(Pattern.compile("^foo$").toString(), filters.getFirst().getDatabasePattern().toString());
 		}
 	}
 
@@ -61,7 +61,7 @@ public class FilterTest {
 		String pattern = "\\w+ \\/[a-z]*1";
 		filters = runParserTest("include: /" + pattern + "/.*");
 		assertEquals(1, filters.size());
-		assertEquals(Pattern.compile(pattern).toString(), filters.get(0).getDatabasePattern().toString());
+		assertEquals(Pattern.compile(pattern).toString(), filters.getFirst().getDatabasePattern().toString());
 	}
 
 	@Test
@@ -69,7 +69,7 @@ public class FilterTest {
 		String input = "include: 1foo.bar.column=foo";
 		filters = runParserTest(input);
 		assertEquals(1, filters.size());
-		assertEquals(input, filters.get(0).toString());
+		assertEquals(input, filters.getFirst().toString());
 	}
 
 	@Test

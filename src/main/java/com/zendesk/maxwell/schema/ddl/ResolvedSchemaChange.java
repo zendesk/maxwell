@@ -28,5 +28,5 @@ public abstract class ResolvedSchemaChange {
 			table = "";
 
 		return Filter.includes(filter, databaseName(), table);
-	};
+	}
 }

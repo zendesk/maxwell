@@ -1,4 +1,4 @@
-FROM maven:3.9.9-eclipse-temurin-23 AS builder
+FROM maven:3.9-eclipse-temurin-25 AS builder
 ENV MAXWELL_VERSION=1.46.0 KAFKA_VERSION=1.0.0
 
 
@@ -20,7 +20,7 @@ RUN cd /workspace \
     && echo "$MAXWELL_VERSION" > /REVISION
 
 # Build clean image with non-root priveledge
-FROM eclipse-temurin:23-jdk
+FROM eclipse-temurin:25-jdk
 
 RUN apt-get update \
     && apt-get -y upgrade

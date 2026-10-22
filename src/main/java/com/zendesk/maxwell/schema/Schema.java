@@ -119,7 +119,7 @@ public class Schema {
 
 	public CaseSensitivity getCaseSensitivity() {
 		return sensitivity;
-	};
+	}
 
 	public List<Pair<FullColumnDef, FullColumnDef>> matchColumns(Schema thatSchema) {
 		ArrayList<Pair<FullColumnDef, FullColumnDef>> list = new ArrayList<>();

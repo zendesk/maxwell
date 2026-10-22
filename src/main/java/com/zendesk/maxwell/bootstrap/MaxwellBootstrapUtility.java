@@ -103,10 +103,10 @@ public class MaxwellBootstrapUtility {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				if ( !isComplete && console != null ) {
-					System.out.println("");
-					System.out.println("Exiting monitor.  Bootstrap will continue in the background.");
-					System.out.println("To abort, run maxwell-bootstrap --abort " + rowId);
-					System.out.println("To resume monitoring, run maxwell-bootstrap --monitor " + rowId);
+					IO.println("");
+					IO.println("Exiting monitor.  Bootstrap will continue in the background.");
+					IO.println("To abort, run maxwell-bootstrap --abort " + rowId);
+					IO.println("To resume monitoring, run maxwell-bootstrap --monitor " + rowId);
 				}
 			}
 		});
@@ -142,7 +142,7 @@ public class MaxwellBootstrapUtility {
 
 	private ConnectionPool getConnectionPool(MaxwellBootstrapUtilityConfig config) throws SQLException {
 		String connectionURI = config.getConnectionURI();
-		System.out.println("connecting to " + connectionURI);
+		IO.println("connecting to " + connectionURI);
 		return new C3P0ConnectionPool(connectionURI, config.mysql.user, config.mysql.password);
 	}
 
@@ -245,7 +245,7 @@ public class MaxwellBootstrapUtility {
 
 	private void displayLine(String line, long count) {
 		if ( console == null && count > 0 && count % NON_CONSOLE_DISPLAY_LINE_COUNT_MULTIPLE == 0 ) {
-			System.out.println(line);
+			IO.println(line);
 		} else {
 			displayLine(line);
 		}
@@ -255,7 +255,7 @@ public class MaxwellBootstrapUtility {
 		if ( console != null ) {
 			String ansiClearLine = "\u001b[2K";
 			String ansiMoveCursorToColumnZero = "\u001b[G";
-			System.out.print(ansiClearLine + ansiMoveCursorToColumnZero + line);
+			IO.print(ansiClearLine + ansiMoveCursorToColumnZero + line);
 			System.out.flush();
 		}
 	}

@@ -83,8 +83,10 @@ class BigQueryCallback implements ApiFutureCallback<AppendRowsResponse> {
 
     if (LOGGER.isDebugEnabled()) {
       try {
-        LOGGER.debug("-> {}\n" +
-            " {}\n",
+        LOGGER.debug("""
+            -> {}
+             {}
+            """,
             this.appendContext.r.toJSON(), this.position);
       } catch (Exception e) {
         e.printStackTrace();

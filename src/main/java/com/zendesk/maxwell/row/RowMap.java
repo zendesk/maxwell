@@ -287,8 +287,8 @@ public class RowMap implements Serializable {
 		length += 40; // overhead.  Whynot.
 		length += key.length() * 2;
 
-		if ( value instanceof String ) {
-			length += ((String) value).length() * 2;
+		if ( value instanceof String string ) {
+			length += string.length() * 2;
 		} else {
 			length += 64;
 		}

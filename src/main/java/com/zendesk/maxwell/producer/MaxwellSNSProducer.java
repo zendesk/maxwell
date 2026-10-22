@@ -129,7 +129,7 @@ class SNSCallback implements AsyncHandler<PublishRequest, PublishResult> {
 		} else {
 			cc.markCompleted();
 		}
-	};
+	}
 
 	@Override
 	public void onSuccess(PublishRequest request, PublishResult result) {

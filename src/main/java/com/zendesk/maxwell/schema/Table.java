@@ -70,8 +70,8 @@ public class Table {
 	public List<StringColumnDef> getStringColumns() {
 		ArrayList<StringColumnDef> list = new ArrayList<>();
 		for ( ColumnDef c : columns ) {
-			if ( c instanceof StringColumnDef )
-				list.add((StringColumnDef) c);
+			if ( c instanceof StringColumnDef def )
+				list.add(def);
 		}
 		return list;
 	}
@@ -143,9 +143,9 @@ public class Table {
 									  + " in " + nameB);
 				}
 
-				if ( column instanceof EnumeratedColumnDef ) {
+				if ( column instanceof EnumeratedColumnDef def ) {
 					EnumeratedColumnDef enumA, enumB;
-					enumA = (EnumeratedColumnDef) column;
+					enumA = def;
 					enumB = (EnumeratedColumnDef) other;
 					if ( !enumA.getEnumValues().equals(enumB.getEnumValues()) ) {
 						diffs.add(colName + "has an enum value mismatch, "
@@ -156,9 +156,9 @@ public class Table {
 					}
 				}
 
-				if ( column instanceof StringColumnDef ) {
+				if ( column instanceof StringColumnDef def1 ) {
 					StringColumnDef stringA, stringB;
-					stringA = (StringColumnDef) column;
+					stringA = def1;
 					stringB = (StringColumnDef) other;
 
 					if ( !Schema.charsetEquals(stringA.getCharset(), stringB.getCharset()) ) {
@@ -171,9 +171,9 @@ public class Table {
 
 				}
 
-				if ( column instanceof IntColumnDef ) {
+				if ( column instanceof IntColumnDef def2 ) {
 					boolean signedA, signedB;
-					signedA = ((IntColumnDef) column).isSigned();
+					signedA = def2.isSigned();
 					signedB = ((IntColumnDef) other).isSigned();
 
 					if ( signedA != signedB )
@@ -184,9 +184,9 @@ public class Table {
 								+ " in " + nameB);
 				}
 
-				if ( column instanceof BigIntColumnDef ) {
+				if ( column instanceof BigIntColumnDef def3 ) {
 					boolean signedA, signedB;
-					signedA = ((BigIntColumnDef) column).isSigned();
+					signedA = def3.isSigned();
 					signedB = ((BigIntColumnDef) other).isSigned();
 
 					if ( signedA != signedB )

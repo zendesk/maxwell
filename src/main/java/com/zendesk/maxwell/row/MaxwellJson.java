@@ -66,27 +66,28 @@ public class MaxwellJson {
 		if (value == null && !includeNullField)
 			return;
 
-		if (value instanceof ScriptObjectMirror) {
-			try {
-				String json = Scripting.stringify((ScriptObjectMirror) value);
-				writeValueToJSON(g, includeNullField, key, new RawJSONString(json));
-			} catch (ScriptException e) {
-				LOGGER.error("error stringifying json object:", e);
+		switch (value) {
+			case ScriptObjectMirror mirror -> {
+				try {
+					String json = Scripting.stringify(mirror);
+					writeValueToJSON(g, includeNullField, key, new RawJSONString(json));
+				} catch (ScriptException e) {
+					LOGGER.error("error stringifying json object:", e);
+				}
 			}
-		} else if (value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
-			List stringList = (List) value;
-
-			g.writeArrayFieldStart(key);
-			for (Object s : stringList) {
-				g.writeObject(s);
+			case List stringList -> { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
+				g.writeArrayFieldStart(key);
+				for (Object s : stringList) {
+					g.writeObject(s);
+				}
+				g.writeEndArray();
 			}
-			g.writeEndArray();
-		} else if (value instanceof RawJSONString) {
-			// JSON column type, using binlog-connector's serializers.
-			g.writeFieldName(key);
-			g.writeRawValue(((RawJSONString) value).json);
-		} else {
-			g.writeObjectField(key, value);
+			case RawJSONString string -> {
+				// JSON column type, using binlog-connector's serializers.
+				g.writeFieldName(key);
+				g.writeRawValue(string.json);
+			}
+			case null, default -> g.writeObjectField(key, value);
 		}
 	}
 }

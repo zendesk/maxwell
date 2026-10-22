@@ -21,8 +21,8 @@ public abstract class AbstractConfig {
 	protected abstract OptionParser buildOptionParser();
 
 	protected void usage(String banner, MaxwellOptionParser optionParser, String section) {
-		System.out.println(banner);
-		System.out.println();
+		IO.println(banner);
+		IO.println();
 		try {
 			optionParser.printHelpOn(System.out, section);
 			System.exit(1);
@@ -30,8 +30,8 @@ public abstract class AbstractConfig {
 	}
 
 	protected void usage(String string) {
-		System.out.println(string);
-		System.out.println();
+		IO.println(string);
+		IO.println();
 		try {
 			buildOptionParser().printHelpOn(System.out);
 			System.exit(1);
@@ -67,8 +67,8 @@ public abstract class AbstractConfig {
 			}
 		};
 
-		System.out.println(string);
-		System.out.println();
+		IO.println(string);
+		IO.println();
 
 		OptionParser p = buildOptionParser();
 		p.formatHelpWith(filteredHelpFormatter);
@@ -156,8 +156,8 @@ public abstract class AbstractConfig {
 				return true;
 			else {
 				Object o = options.valueOf(name);
-				if (o instanceof String) {
-					return parseBoolean(name, (String) o);
+				if (o instanceof String string) {
+					return parseBoolean(name, string);
 				} else {
 					return (boolean) o;
 				}
@@ -171,8 +171,8 @@ public abstract class AbstractConfig {
 	protected Long fetchLongOption(String name, OptionSet options, Properties properties, Long defaultVal) {
 		try {
 			Object opt = fetchOption(name, options, properties, defaultVal);
-			if ( opt instanceof String)
-				return Long.valueOf((String) opt);
+			if ( opt instanceof String string)
+				return Long.valueOf(string);
 			else
 				return (Long) opt;
 		} catch ( NumberFormatException|OptionException e ) {
@@ -185,8 +185,8 @@ public abstract class AbstractConfig {
 	protected Integer fetchIntegerOption(String name, OptionSet options, Properties properties, Integer defaultVal) {
 		try {
 			Object opt = fetchOption(name, options, properties, defaultVal);
-			if ( opt instanceof String)
-				return Integer.valueOf((String) opt);
+			if ( opt instanceof String string)
+				return Integer.valueOf(string);
 			else
 				return (Integer) opt;
 		} catch ( NumberFormatException|OptionException e ) {
@@ -199,8 +199,8 @@ public abstract class AbstractConfig {
 	protected Float fetchFloatOption(String name, OptionSet options, Properties properties, Float defaultVal) {
 		try {
 			Object opt = fetchOption(name, options, properties, defaultVal);
-			if ( opt instanceof String)
-				return Float.valueOf((String) opt);
+			if ( opt instanceof String string)
+				return Float.valueOf(string);
 			else
 				return (Float) opt;
 		} catch ( NumberFormatException|OptionException e ) {

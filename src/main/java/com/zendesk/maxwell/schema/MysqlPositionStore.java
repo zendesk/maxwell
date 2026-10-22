@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 
 public class MysqlPositionStore {
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlPositionStore.class);
-	private static final Long DEFAULT_GTID_SERVER_ID = new Long(0);
+	private static final Long DEFAULT_GTID_SERVER_ID = Long.valueOf(0);
 	private final Long serverID;
 	private String clientID;
 	private final boolean gtidMode;
@@ -208,7 +208,7 @@ public class MysqlPositionStore {
 	protected RecoveryInfo getRecoveryInfo(MaxwellConfig config, Connection c) throws SQLException {
 		List<RecoveryInfo> recoveries = getAllRecoveryInfos(c);
 		if (recoveries.size() == 1) {
-			return recoveries.get(0);
+			return recoveries.getFirst();
 		} else {
 			for (String line: formatRecoveryFailure(config, recoveries)) {
 				LOGGER.error(line);
@@ -255,7 +255,7 @@ public class MysqlPositionStore {
 		}
 
 		ArrayList<String> result = new ArrayList<>();
-		Long mostRecentMaster = recoveries.get(0).serverID;
+		Long mostRecentMaster = recoveries.getFirst().serverID;
 
 		result.add("Found multiple binlog positions for cluster in `positions` table.  Not attempting position recovery.");
 		result.add("Positions found (most recent heartbeat first):");

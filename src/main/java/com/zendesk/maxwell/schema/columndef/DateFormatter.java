@@ -11,20 +11,19 @@ public class DateFormatter {
 	private static final ThreadLocal<StringBuilder> stringBuilderThreadLocal = ThreadLocal.withInitial(() -> new StringBuilder(32));
 
 	public static Timestamp extractTimestamp(Object value) throws IllegalArgumentException {
-		if (value instanceof Long) {
-			Long micros = (Long) value;
+		if (value instanceof Long micros) {
 			long millis = floorDiv(micros, 1000L);
 			Timestamp t = new Timestamp(millis);
 			long microsOnly = floorMod(micros, (long) 1000000);
 			t.setNanos((int) microsOnly * 1000);
 			return t;
-		} else if (value instanceof Timestamp) {
-			return (Timestamp) value;
-		} else if ( value instanceof Date ) {
-			Long time = ((Date) value).getTime();
+		} else if (value instanceof Timestamp timestamp) {
+			return timestamp;
+		} else if ( value instanceof Date date ) {
+			Long time = date.getTime();
 			return new Timestamp(time);
-		}  else if ( value instanceof LocalDateTime) {
-			return Timestamp.valueOf((LocalDateTime) value);
+		}  else if ( value instanceof LocalDateTime time) {
+			return Timestamp.valueOf(time);
 		} else
 			throw new IllegalArgumentException("couldn't extract date/time out of " + value);
 	}
@@ -89,9 +88,9 @@ public class DateFormatter {
 	public static String formatDate(Object value) {
 		Calendar cal;
 
-		if ( value instanceof Long ) {
+		if ( value instanceof Long long1 ) {
 			cal = calendarUTCThreadLocal.get();
-			cal.setTimeInMillis(floorDiv((Long) value, 1000L));
+			cal.setTimeInMillis(floorDiv(long1, 1000L));
 		} else {
 			cal = calendarThreadLocal.get();
 			cal.setTimeInMillis(extractTimestamp(value).getTime());

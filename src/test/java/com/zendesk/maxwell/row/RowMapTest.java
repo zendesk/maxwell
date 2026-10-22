@@ -57,7 +57,7 @@ public class RowMapTest {
 		rowMap.putData("column", "value");
 
 		List<Object> pkValues = rowMap.getPrimaryKeyValues();
-		Assert.assertEquals(9001, pkValues.get(0));
+		Assert.assertEquals(9001, pkValues.getFirst());
 		Assert.assertEquals("example", pkValues.get(1));
 	}
 
@@ -76,7 +76,7 @@ public class RowMapTest {
 		rowMap.putData("column", "value");
 
 		List<String> pkColumns = rowMap.getPrimaryKeyColumns();
-		Assert.assertEquals("id", pkColumns.get(0));
+		Assert.assertEquals("id", pkColumns.getFirst());
 		Assert.assertEquals("name", pkColumns.get(1));
 	}
 

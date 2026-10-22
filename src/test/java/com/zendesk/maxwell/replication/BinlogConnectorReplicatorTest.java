@@ -61,8 +61,7 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 		public WriteRowsEventData deserialize(ByteArrayInputStream inputStream) throws IOException {
 			WriteRowsEventData d = super.deserialize(inputStream);
 			List<Serializable[]> list = d.getRows();
-			if ( !thrown && list.get(0)[0] instanceof Integer ) {
-				Integer i = (Integer) list.get(0)[0];
+			if ( !thrown && list.getFirst()[0] instanceof Integer i ) {
 				if ( i == THROWME ) {
 					thrown = true;
 					inputStream.close();

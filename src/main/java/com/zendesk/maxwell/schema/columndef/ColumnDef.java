@@ -34,8 +34,7 @@ public abstract class ColumnDef implements Cloneable {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o instanceof ColumnDef && o.getClass() == getClass()) {
-			ColumnDef other = (ColumnDef) o;
+		if (o instanceof ColumnDef other && o.getClass() == getClass()) {
 			return Objects.equals(name, other.name)
 					&& Objects.equals(pos, other.pos)
 					&& Objects.equals(type, other.type);

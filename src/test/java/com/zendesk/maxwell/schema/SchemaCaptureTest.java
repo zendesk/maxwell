@@ -6,7 +6,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Comparator;
@@ -123,13 +123,13 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 		List<String> pk = sharded.getPKList();
 		assertThat(pk, notNullValue());
 		assertThat(pk.size(), is(2));
-		assertThat(pk.get(0), is("id"));
+		assertThat(pk.getFirst(), is("id"));
 		assertThat(pk.get(1), is("account_id"));
 	}
 
 	@Test
 	public void testEnums() throws SQLException, InvalidSchemaError, IOException {
-		byte[] sql = Files.readAllBytes(Paths.get(getSQLDir() + "/schema/enum.sql"));
+		byte[] sql = Files.readAllBytes(Path.of(getSQLDir() + "/schema/enum.sql"));
 		server.executeList(Collections.singletonList(new String(sql)));
 
 		Schema s = capturer.capture();
@@ -202,12 +202,12 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testHugeCaptureMemUsage() throws Exception {
 		Runtime.getRuntime().gc();
-		System.out.println("usage before: " + getUsedMem());
+		IO.println("usage before: " + getUsedMem());
 		generateHugeSchema();
 		Schema s = capturer.capture();
 		Runtime.getRuntime().gc();
 		Runtime.getRuntime().gc();
-		System.out.println("usage after: " + getUsedMem());
-		System.out.println(s.getCharset());
+		IO.println("usage after: " + getUsedMem());
+		IO.println(s.getCharset());
 	}
 }

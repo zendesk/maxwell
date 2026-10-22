@@ -15,7 +15,7 @@ public class StdoutProducer extends AbstractProducer {
 		String output = r.toJSON(outputConfig);
 
 		if ( output != null && r.shouldOutput(outputConfig) )
-			System.out.println(output);
+			IO.println(output);
 
 		this.messageLatencyTimer.update(
 			System.currentTimeMillis() - r.getTimestampMillis(),

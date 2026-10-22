@@ -77,8 +77,8 @@ public class MaxwellBenchmark {
 
 		Position initPosition = Position.capture(server.getConnection(), false);
 		generateData(server.getConnection(), nRows);
-		System.out.println("generated data.  you may now run:");
-		System.out.println("bin/maxwell-benchmark --input=" +  server.path + " --init_position=" + initPosition.toCommandline());
+		IO.println("generated data.  you may now run:");
+		IO.println("bin/maxwell-benchmark --input=" + server.path + " --init_position=" + initPosition.toCommandline());
 	}
 
 	private static void benchmark(String path, long skipRows, String args[]) throws Exception {

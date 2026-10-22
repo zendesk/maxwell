@@ -14,24 +14,25 @@ public class ColumnDefSerializer extends JsonSerializer<ColumnDef> {
 		jgen.writeStringField("type", def.getType());
 		jgen.writeStringField("name", def.getName());
 
-		if ( def instanceof StringColumnDef ) {
-			jgen.writeStringField("charset", ((StringColumnDef) def).getCharset());
-		} else if ( def instanceof IntColumnDef ) {
-			jgen.writeBooleanField("signed", ((IntColumnDef) def).isSigned());
-		} else if ( def instanceof BigIntColumnDef ) {
-			jgen.writeBooleanField("signed", ((BigIntColumnDef) def).isSigned());
-		} else if ( def instanceof EnumeratedColumnDef ) {
-			jgen.writeArrayFieldStart("enum-values");
-			for (String s : ((EnumeratedColumnDef) def).getEnumValues())
-				jgen.writeString(s);
-			jgen.writeEndArray();
-		} else if ( def instanceof ColumnDefWithLength ) {
-			// columnLength is a long but technically, it' not that long. It it were, we could
-			// need to use a string to represent it, instead of an integer, to avoid issues
-			// with Javascript when parsing long integers.
-			Long columnLength = ( (ColumnDefWithLength) def ).getColumnLength();
-			if ( columnLength != null )
-				jgen.writeNumberField("column-length", columnLength);
+		switch (def) {
+			case StringColumnDef columnDef3 -> jgen.writeStringField("charset", columnDef3.getCharset());
+			case IntColumnDef columnDef2 -> jgen.writeBooleanField("signed", columnDef2.isSigned());
+			case BigIntColumnDef columnDef1 -> jgen.writeBooleanField("signed", columnDef1.isSigned());
+			case EnumeratedColumnDef columnDef -> {
+				jgen.writeArrayFieldStart("enum-values");
+				for (String s : columnDef.getEnumValues())
+					jgen.writeString(s);
+				jgen.writeEndArray();
+			}
+			case ColumnDefWithLength length -> {
+				// columnLength is a long but technically, it' not that long. It it were, we could
+				// need to use a string to represent it, instead of an integer, to avoid issues
+				// with Javascript when parsing long integers.
+				Long columnLength = length.getColumnLength();
+				if (columnLength != null)
+					jgen.writeNumberField("column-length", columnLength);
+			}
+			case null, default -> {}
 		}
 		jgen.writeEndObject();
 	}

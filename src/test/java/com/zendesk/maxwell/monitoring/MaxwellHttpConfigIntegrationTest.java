@@ -34,7 +34,7 @@ public class MaxwellHttpConfigIntegrationTest extends MaxwellTestWithIsolatedSer
 	private boolean probeHTTP() {
 		try {
 			// Create a neat value object to hold the URL
-			URL url = new URL("http://localhost:22222/config");
+			URL url = URI.create("http://localhost:22222/config").toURL();
 
 			HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 			InputStream responseStream = connection.getInputStream();

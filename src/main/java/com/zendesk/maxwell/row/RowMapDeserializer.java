@@ -148,22 +148,15 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		}
 
 		if (value.numberType() != null) {
-			switch (value.numberType()) {
-				case LONG:
-					return value.longValue();
-				case DOUBLE:
-					return value.doubleValue();
-				case FLOAT:
-					return value.floatValue();
-				case INT:
-					return value.intValue();
-				case BIG_DECIMAL:
-					return value.decimalValue();
-				case BIG_INTEGER:
-					return value.bigIntegerValue();
-				default:
-					return value.asText();
-			}
+			return switch (value.numberType()) {
+				case LONG -> value.longValue();
+				case DOUBLE -> value.doubleValue();
+				case FLOAT -> value.floatValue();
+				case INT -> value.intValue();
+				case BIG_DECIMAL -> value.decimalValue();
+				case BIG_INTEGER -> value.bigIntegerValue();
+				default -> value.asText();
+			};
 		}
 
 		if (value.isBoolean()) {

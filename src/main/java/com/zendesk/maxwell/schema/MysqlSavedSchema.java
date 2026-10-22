@@ -149,7 +149,7 @@ public class MysqlSavedSchema {
 				"INSERT into `schemas` SET base_schema_id = ?, deltas = ?, binlog_file = ?, " +
 				"binlog_position = ?, server_id = ?, charset = ?, version = ?, " +
 				"position_sha = ?, gtid_set = ?, last_heartbeat_read = ?",
-				Statement.RETURN_GENERATED_KEYS);) {
+				Statement.RETURN_GENERATED_KEYS)) {
 
 
 			String deltaString;
@@ -217,8 +217,7 @@ public class MysqlSavedSchema {
 					for (ColumnDef c : t.getColumnList()) {
 						String enumValuesSQL = null;
 
-						if ( c instanceof EnumeratedColumnDef ) {
-							EnumeratedColumnDef enumColumn = (EnumeratedColumnDef) c;
+						if ( c instanceof EnumeratedColumnDef enumColumn ) {
 							if (enumColumn.getEnumValues() != null) {
 								try {
 									enumValuesSQL = mapper.writeValueAsString(enumColumn.getEnumValues());
@@ -232,26 +231,24 @@ public class MysqlSavedSchema {
 						columnData.add(tableId);
 						columnData.add(c.getName());
 
-						if ( c instanceof StringColumnDef ) {
-							columnData.add(((StringColumnDef) c).getCharset());
+						if ( c instanceof StringColumnDef def ) {
+							columnData.add(def.getCharset());
 						} else {
 							columnData.add(null);
 						}
 
 						columnData.add(c.getType());
 
-						if ( c instanceof IntColumnDef ) {
-							columnData.add(((IntColumnDef) c).isSigned() ? 1 : 0);
-						} else if ( c instanceof BigIntColumnDef ) {
-							columnData.add(((BigIntColumnDef) c).isSigned() ? 1 : 0);
-						} else {
-							columnData.add(0);
+						switch (c) {
+							case IntColumnDef def2 -> columnData.add(def2.isSigned() ? 1 : 0);
+							case BigIntColumnDef def1 -> columnData.add(def1.isSigned() ? 1 : 0);
+							case null, default -> columnData.add(0);
 						}
 
 						columnData.add(enumValuesSQL);
 
-						if ( c instanceof ColumnDefWithLength ) {
-							Long columnLength = ((ColumnDefWithLength) c).getColumnLength();
+						if ( c instanceof ColumnDefWithLength length ) {
+							Long columnLength = length.getColumnLength();
 							columnData.add(columnLength);
 						} else {
 							columnData.add(null);
@@ -692,8 +689,8 @@ public class MysqlSavedSchema {
 			ColumnDef recapturedCol = pair.getRight().getColumnDef();
 
 			if (schemaCol instanceof IntColumnDef) {
-				if (recapturedCol != null && recapturedCol instanceof IntColumnDef) {
-					if (((IntColumnDef) schemaCol).isSigned() && !((IntColumnDef) recapturedCol).isSigned()) {
+				if (recapturedCol != null && recapturedCol instanceof IntColumnDef def) {
+					if (((IntColumnDef) schemaCol).isSigned() && !def.isSigned()) {
 						schemaTable.replaceColumn(schemaCol.getPos(), ((IntColumnDef) schemaCol).withSigned(false));
 						unsignedDiffs++;
 					}
@@ -702,8 +699,8 @@ public class MysqlSavedSchema {
 						".  You may want to recapture your schema");
 				}
 			} else if (schemaCol instanceof BigIntColumnDef) {
-				if (recapturedCol != null && recapturedCol instanceof BigIntColumnDef) {
-					if (((BigIntColumnDef) schemaCol).isSigned() && !((BigIntColumnDef) recapturedCol).isSigned()) {
+				if (recapturedCol != null && recapturedCol instanceof BigIntColumnDef def1) {
+					if (((BigIntColumnDef) schemaCol).isSigned() && !def1.isSigned()) {
 						schemaTable.replaceColumn(schemaCol.getPos(), ((BigIntColumnDef) schemaCol).withSigned(false));
 					}
 					unsignedDiffs++;
@@ -753,9 +750,9 @@ public class MysqlSavedSchema {
 			ColumnDef recapturedCol = pair.getRight().getColumnDef();
 
 			if (schemaCol instanceof ColumnDefWithLength) {
-				if (recapturedCol != null && recapturedCol instanceof ColumnDefWithLength) {
+				if (recapturedCol != null && recapturedCol instanceof ColumnDefWithLength length) {
 					long aColLength = ((ColumnDefWithLength) schemaCol).getColumnLength();
-					long bColLength = ((ColumnDefWithLength) recapturedCol).getColumnLength();
+					long bColLength = length.getColumnLength();
 
 					if ( aColLength != bColLength ) {
 						colLengthDiffs++;

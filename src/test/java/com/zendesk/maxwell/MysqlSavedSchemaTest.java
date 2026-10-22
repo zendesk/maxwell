@@ -77,7 +77,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 
 		assertThat(t.getPKList(), is(not(nullValue())));
 		assertThat(t.getPKList().size(), is(3));
-		assertThat(t.getPKList().get(0), is("col2"));
+		assertThat(t.getPKList().getFirst(), is("col2"));
 		assertThat(t.getPKList().get(1), is("col3"));
 		assertThat(t.getPKList().get(2), is("id"));
 	}
@@ -89,7 +89,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context, context.getInitialPosition());
 		Table t = restoredSchema.getSchema().findDatabase("shard_1").findTable("pks_case");
 
-		assertThat(t.getPKList().get(0), is("Col2"));
+		assertThat(t.getPKList().getFirst(), is("Col2"));
 		assertThat(t.getPKList().get(1), is("COL3"));
 	}
 

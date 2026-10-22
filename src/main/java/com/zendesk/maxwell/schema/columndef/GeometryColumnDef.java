@@ -23,23 +23,22 @@ public class GeometryColumnDef extends ColumnDef {
 	@Override
 	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		Geometry geometry = null;
-		if ( value instanceof Geometry ) {
-			geometry = (Geometry) value;
-		} else if ( value instanceof byte[] ) {
-			byte []bytes = (byte[]) value;
+		switch (value) {
+			case Geometry geometry1 -> geometry = geometry1;
+			case byte [] bytes -> {
 
-			// mysql sprinkles 4 mystery bytes on top of the GIS data.
-			bytes = Arrays.copyOfRange(bytes, 4, bytes.length);
-			final WKBReader reader = new WKBReader();
+				// mysql sprinkles 4 mystery bytes on top of the GIS data.
+				bytes = Arrays.copyOfRange(bytes, 4, bytes.length);
+				final WKBReader reader = new WKBReader();
 
-			try {
-				geometry = reader.read(bytes);
-			} catch ( ParseException e ) {
-				throw new RuntimeException("Could not parse geometry: " + e);
+				try {
+					geometry = reader.read(bytes);
+				} catch (ParseException e) {
+					throw new RuntimeException("Could not parse geometry: " + e);
+				}
+
 			}
-
-		} else {
-			throw new ColumnDefCastException(this, value);
+			case null, default -> throw new ColumnDefCastException(this, value);
 		}
 
 		return geometry.toText();

@@ -75,7 +75,7 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 
 			}
 			long nGenerated = (i + 1) * HUGE_NUM_TABLES;
-			System.out.println("generated " + nGenerated + " of " + (HUGE_NUM_DBS * HUGE_NUM_TABLES) + " tables");
+			IO.println("generated " + nGenerated + " of " + (HUGE_NUM_DBS * HUGE_NUM_TABLES) + " tables");
 		}
 	}
 

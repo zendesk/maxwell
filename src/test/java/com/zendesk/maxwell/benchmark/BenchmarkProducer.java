@@ -30,9 +30,9 @@ public class BenchmarkProducer extends AbstractProfilingProducer {
 		if ( lastRowReceivedAt > 0 && now - lastRowReceivedAt > 2000 )	 {
 			double seconds = (lastRowReceivedAt - this.startTime) / 1000.0d;
 			msg = String.format("Producer received %d rows in %.2f seconds", this.count, seconds );
-			System.out.println(msg);
+			IO.println(msg);
 			msg = String.format("%.0f rows per second", this.count / seconds);
-			System.out.println(msg);
+			IO.println(msg);
 			System.exit(0);
 		}
 	}

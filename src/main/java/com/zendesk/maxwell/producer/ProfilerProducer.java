@@ -17,11 +17,11 @@ public class ProfilerProducer extends AbstractProfilingProducer {
 
 		if ( this.count % 10000 == 0 ) {
 			long elapsed = System.currentTimeMillis() - this.startTime;
-			System.out.println("rows per second: " + (count * 1000) / elapsed);
+			IO.println("rows per second: " + (count * 1000) / elapsed);
 		}
 
 		if ( this.count % 1000000 == 0 ) {
-			System.out.println("resetting statistics.");
+			IO.println("resetting statistics.");
 			this.count = 0;
 			this.startTime = System.currentTimeMillis();
 		}

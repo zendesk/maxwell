@@ -270,8 +270,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		LOGGER.warn("communications failure in binlog:", ex);
 
 		// Stopping Maxwell only in case we cannot read binlogs from the current server
-		if (ex instanceof ServerException) {
-			ServerException serverEx = (ServerException) ex;
+		if (ex instanceof ServerException serverEx) {
 			int errCode = serverEx.getErrorCode();
 
 			switch(errCode) {

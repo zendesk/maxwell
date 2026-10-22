@@ -112,8 +112,7 @@ public class TableColumnList implements Iterable<ColumnDef> {
 
 		@Override
 		public boolean equals(Object o) {
-			if (o instanceof ImmutableColumnList) {
-				ImmutableColumnList other = (ImmutableColumnList) o;
+			if (o instanceof ImmutableColumnList other) {
 				return columns.equals(other.columns);
 			}
 			return false;

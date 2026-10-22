@@ -16,19 +16,19 @@ public class TimeColumnDef extends ColumnDefWithLength {
 	}
 
 	protected String formatValue(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
-		if ( value instanceof Timestamp ) {
-			Time time = new Time(((Timestamp) value).getTime());
+		if ( value instanceof Timestamp timestamp ) {
+			Time time = new Time(timestamp.getTime());
 			String timeAsStr = String.valueOf(time);
 
-			return appendFractionalSeconds(timeAsStr, ((Timestamp) value).getNanos(), this.getColumnLength());
+			return appendFractionalSeconds(timeAsStr, timestamp.getNanos(), this.getColumnLength());
 
-		} else if ( value instanceof Long ) {
-			Time time = new Time((Long) value / 1000);
+		} else if ( value instanceof Long long1 ) {
+			Time time = new Time(long1 / 1000);
 			String timeAsStr = String.valueOf(time);
 
-			return appendFractionalSeconds(timeAsStr, (int) ((Long) value % 1000000) * 1000, this.getColumnLength());
-		} else if ( value instanceof Time ){
-			return String.valueOf((Time) value);
+			return appendFractionalSeconds(timeAsStr, (int) (long1 % 1000000) * 1000, this.getColumnLength());
+		} else if ( value instanceof Time time ){
+			return String.valueOf(time);
 		} else {
 			throw new ColumnDefCastException(this, value);
 		}

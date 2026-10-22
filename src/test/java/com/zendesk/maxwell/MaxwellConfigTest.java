@@ -13,7 +13,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,7 +36,7 @@ public class MaxwellConfigTest
 	@Test
 	public void testFetchProducerFactoryFromConfigFile() {
 		String configPath = getTestConfigDir() + "producer-factory-config.properties";
-		assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
+		assertNotNull("Config file not found at: " + configPath, Path.of(configPath));
 		
 		config = new MaxwellConfig(new String[] { "--config=" + configPath });
 		assertNotNull(config.producerFactory);
@@ -59,7 +59,7 @@ public class MaxwellConfigTest
 	@Test
 	public void testCustomPropertiesFromConfigFile() {
 		String configPath = getTestConfigDir() + "producer-factory-config.properties";
-		assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
+		assertNotNull("Config file not found at: " + configPath, Path.of(configPath));
 		
 		config = new MaxwellConfig(new String[] { "--config=" + configPath });
 		assertEquals("bar", config.customProducerProperties.getProperty("foo"));
@@ -87,7 +87,7 @@ public class MaxwellConfigTest
 		environmentVariables.set("FOO_KAFKA.RETRIES", "100");
 		environmentVariables.set("USER", "mysql");
 		String configPath = getTestConfigDir() + "env-var-config.properties";
-		assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
+		assertNotNull("Config file not found at: " + configPath, Path.of(configPath));
 
 		config = new MaxwellConfig(new String[] { "--config=" + configPath, "--host=localhost" });
 		assertEquals("foo", config.maxwellMysql.user);
@@ -134,7 +134,7 @@ public class MaxwellConfigTest
 		environmentVariables.set("MAXWELL_JSON", jsonConfig);
 
 		String configPath = getTestConfigDir() + "producer-factory-config.properties";
-		assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
+		assertNotNull("Config file not found at: " + configPath, Path.of(configPath));
 
 		config = new MaxwellConfig(new String[] { "--env_config=MAXWELL_JSON", "--config=" + configPath });
 		// foo in env_config overwrites bar in producer-factory-config.properties"

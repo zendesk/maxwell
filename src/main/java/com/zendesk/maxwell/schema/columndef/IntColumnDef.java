@@ -46,12 +46,11 @@ public class IntColumnDef extends ColumnDef {
 
 	private Long toLong(Object value) throws ColumnDefCastException {
 
-		if ( value instanceof Long ) {
-			return ( Long ) value;
-		} else if ( value instanceof Boolean ) {
-			return ( Boolean ) value ? 1l: 0l;
-		} else if ( value instanceof Integer ) {
-			Integer i = (Integer) value;
+		if ( value instanceof Long long1 ) {
+			return long1;
+		} else if ( value instanceof Boolean boolean1 ) {
+			return boolean1 ? 1l: 0l;
+		} else if ( value instanceof Integer i ) {
 
 			if (signed)
 				return Long.valueOf(i);
@@ -74,18 +73,13 @@ public class IntColumnDef extends ColumnDef {
 	}
 
 	private final static int bitsFromType(String type) {
-		switch(type) {
-		case "tinyint":
-			return 8;
-		case "smallint":
-			return 16;
-		case "mediumint":
-			return 24;
-		case "int":
-			return 32;
-		default:
-			return 0;
-		}
+		return switch(type) {
+		case "tinyint" -> 8;
+		case "smallint" -> 16;
+		case "mediumint" -> 24;
+		case "int" -> 32;
+		default -> 0;
+		};
 	}
 
 	public boolean isSigned() {
