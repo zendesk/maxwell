@@ -182,7 +182,7 @@ option                         | argument                            | descripti
 output_binlog_position         | BOOLEAN  | records include binlog position     | false
 output_gtid_position           | BOOLEAN  | records include gtid position, if available | false
 output_commit_info             | BOOLEAN  | records include commit and xid      | true
-output_xoffset                 | BOOLEAN  | records include virtual tx-row offset | false
+output_xoffset                 | BOOLEAN  | records include virtual tx-row offset | true
 output_push_timestamp          | BOOLEAN  | records are timestamped with a high-precision value before being sent to the producer | false
 output_nulls                   | BOOLEAN  | records include fields with NULL values    | true
 output_server_id               | BOOLEAN  | records include server_id                  | false
