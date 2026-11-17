@@ -39,6 +39,7 @@ index_options:
   | WITH PARSER name
   | COMMENT string_literal
   | ( VISIBLE | INVISIBLE )
+  | ( ENGINE_ATTRIBUTE | SECONDARY_ENGINE_ATTRIBUTE ) '='? string_literal
   ;
 
 index_column_list: '(' index_columns ')';

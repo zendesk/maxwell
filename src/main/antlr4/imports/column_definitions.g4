@@ -96,6 +96,8 @@ column_options:
 	| CHECK skip_parens
 	| SRID INTEGER_LITERAL
 	| NOT SECONDARY
+	| (ENGINE_ATTRIBUTE | SECONDARY_ENGINE_ATTRIBUTE) '='? string_literal
+	| EXTERNAL_FORMAT string_literal
 ;
 
 primary_key: PRIMARY KEY;

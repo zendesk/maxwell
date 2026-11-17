@@ -277,6 +277,29 @@ public class DDLParserTest {
 			"ALTER TABLE table_foo WAIT 30 ADD COLUMN my_column INTEGER, ALGORITHM=INSTANT, LOCK=NONE",
 			"ALTER TABLE dialog360_conversations MODIFY COLUMN IF EXISTS phone_number varchar(20) DEFAULT ''",
 			"ALTER TABLE test_table MODIFY COLUMN notes text NOT SECONDARY",
+			"ALTER TABLE `heatwave`.`orders` SECONDARY_ENGINE=RAPID",
+			"ALTER TABLE orders SECONDARY_ENGINE = NULL",
+			"ALTER TABLE orders SECONDARY_LOAD",
+			"ALTER TABLE orders SECONDARY_LOAD PARTITION (p0, p1) GUIDED OFF",
+			"ALTER TABLE orders SECONDARY_UNLOAD PARTITION (p0)",
+			"CREATE TABLE orders_hw (id int) ENGINE=InnoDB SECONDARY_ENGINE=RAPID",
+			"ALTER TABLE table_name SECONDARY_ENGINE=NO_AUTO",
+			"ALTER TABLE data_files_1 SECONDARY_ENGINE=NO_AUTO",
+			"ALTER TABLE orders SECONDARY_ENGINE = 'RAPID'",
+			"ALTER TABLE orders SECONDARY_ENGINE rapid",
+			"ALTER TABLE orders SECONDARY_LOAD GUIDED ON",
+			"ALTER TABLE orders SECONDARY_ENGINE_ATTRIBUTE='{\"auto_encoding\": true}'",
+			"ALTER TABLE orders ENGINE_ATTRIBUTE = '{\"file\": [{\"uri\": \"oci://bucket@ns/data/\"}]}'",
+			"ALTER TABLE `airportdb`.`airport_geo` MODIFY `geolocation` point NOT NULL COMMENT '' NOT SECONDARY",
+			"ALTER TABLE orders MODIFY notes text COMMENT 'RAPID_COLUMN=ENCODING=VARLEN'",
+			"ALTER TABLE orders MODIFY notes text SECONDARY_ENGINE_ATTRIBUTE '{\"encoding\": \"VARLEN\"}'",
+			"ALTER TABLE orders ADD INDEX idx_a (a) ENGINE_ATTRIBUTE='{}' SECONDARY_ENGINE_ATTRIBUTE='{}'",
+			"CREATE TABLE orders_hw (id int ENGINE_ATTRIBUTE='{}', KEY k (id) SECONDARY_ENGINE_ATTRIBUTE '{}') SECONDARY_ENGINE=RAPID SECONDARY_ENGINE_ATTRIBUTE='{}'",
+			"CREATE TABLE lh (id int, d date ENGINE_ATTRIBUTE '{\"date_format\": \"%d/%m/%Y\"}') ENGINE=lakehouse SECONDARY_ENGINE=rapid ENGINE_ATTRIBUTE='{\"dialect\": {\"format\": \"csv\"}, \"file\": [{\"uri\": \"oci://bucket@ns/f.csv\"}]}'",
+			"CREATE EXTERNAL TABLE lh (col_1 int, col_2 date EXTERNAL_FORMAT 'auto') FILE_FORMAT = (FORMAT csv HEADER ON FIELDS TERMINATED BY ',') FILES = (URI = 'oci://bucket@ns/f.csv', URI = 'oci://bucket@ns/g.csv' STRICT_LOAD = 0) ALLOW_MISSING_FILES = 1 STRICT_LOAD = DEFAULT VERIFY_KEY_CONSTRAINTS 0 AUTO_REFRESH_SOURCE = 'ocid1.stream.oc1.iad.x'",
+			"CREATE EXTERNAL TABLE lh (col_1 int) ENGINE_ATTRIBUTE='{\"dialect\": {\"format\": \"parquet\"}, \"file\": [{\"uri\": \"oci://bucket@ns/data/\"}]}' PARTITION BY KEY (col_1)",
+			"ALTER TABLE lh AUTO_REFRESH_SOURCE = NONE",
+			"CREATE TABLE heatwave_words (external int, files int, file_format int, engine_attribute int, secondary_engine_attribute int, strict_load int, guided int, off int)",
 			"ALTER TABLE test_table IF EXISTS ADD COLUMN new_col INT",
 			"ALTER TABLE test_table IF EXISTS DROP COLUMN old_col",
 			"ALTER TABLE test_table IF EXISTS MODIFY COLUMN id BIGINT",
@@ -435,6 +458,26 @@ public class DDLParserTest {
 				+ "COMPRESSION='lz4'"
 		);
 		assertThat(c, not(nullValue()));
+	}
+
+	@Test
+	public void testCreateExternalTable() {
+		TableCreate c = parseCreate(
+			"CREATE EXTERNAL TABLE `lake`.`events` (id int, payload json, created_at datetime EXTERNAL_FORMAT 'auto') "
+			+ "FILE_FORMAT = (FORMAT json) FILES = (URI = 'oci://bucket@ns/events/')"
+		);
+		assertThat(c.database, is("lake"));
+		assertThat(c.table, is("events"));
+		assertThat(c.columns.size(), is(3));
+		assertThat(c.columns.get(2).getName(), is("created_at"));
+	}
+
+	@Test
+	public void testHeatwaveSecondaryEngineIsNoOp() {
+		TableAlter a = parseAlter("ALTER TABLE `heatwave`.`orders` SECONDARY_ENGINE=NO_AUTO");
+		assertThat(a.database, is("heatwave"));
+		assertThat(a.table, is("orders"));
+		assertThat(a.columnMods.size(), is(0));
 	}
 
 	@Test
