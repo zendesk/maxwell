@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.47.0](https://github.com/zendesk/maxwell/releases/tag/v1.47.0)
+
+- parser support for HEATWAVE
+- fixes for crazy bootstrap quoting
+
+
+
+_Released 2026-11-17_
+
 ### [v1.46.0](https://github.com/zendesk/maxwell/releases/tag/v1.46.0)
 
 - docker now hosted on https://hub.docker.com/r/osheroff/maxwell
