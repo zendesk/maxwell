@@ -73,6 +73,8 @@ ignored_alter_specifications:
     | RENAME (INDEX|KEY) name TO name
     | DROP CHECK name
     | DROP CONSTRAINT if_exists? name
+    | SECONDARY_LOAD (PARTITION '(' partition_names ')')? (GUIDED (ON | OFF))?
+    | SECONDARY_UNLOAD (PARTITION '(' partition_names ')')?
     | alter_post_flag
     ;
 
