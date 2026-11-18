@@ -53,8 +53,36 @@ which can be worked around by forcing the JVM onto an ipv4 stack:
 JAVA_OPTS="-Djava.net.preferIPv4Stack=true" bin/maxwell --ha --raft_member_id=B
 ```
 
+# High Availabilty on Zookeeper
 
+High availability through zookeeper
 
+## Getting started
+Prepare two or more servers to serve as the maxwell host server and a zookeeper cluster.  (The maxwell host server and a zookeeper cluster can communicate.)
 
+Example Running Scripts:
 
+```
+    bin/maxwell --log_level='INFO' --user='<user>' --password='<passwd>' --host='<host>' --producer=stdout --client_id='<client_id>' --ha='zookeeper' --zookeeper_server ='<host1:port>,<host2:port>,<host3:port>'
+```
+
+Run the preceding command on each maxwell host.
+
+Get which host is the leader script Example:
+```
+    bin/maxwell-leaders --ha='zookeeper' --zookeeper_server ='<host1:port>,<host2:port>,<host3:port>' --client_id='<client_id>'
+```
+You can get:
+```
+    [INFO] MaxwellLeaders: clientID:<clientID>:leaders now are -> <leader host>
+```
+
+## Getting deeper
+If a timeout error occurs between the maxwell host and the zookeeper cluster or the connection is abnormal due to network instability, you can set the following parameters:
+```
+--zookeeper_session_timeout_ms=<session timeout duration> 
+--zookeeper_connection_timeout_ms=<internal default wait time for the client to establish a connection with the zk> 
+--zookeeper_max_retries=<number of retries>
+--zookeeper_retry_wait_ms=<retry time interval>
+```
 
