@@ -10,8 +10,15 @@ import mysql_literal_tokens,
        mysql_rename,
        mysql_view;
 
-parse: statement?
+parse: (set_statement_for? statement)?
        EOF;
+
+// MariaDB: SET STATEMENT var=value[, ...] FOR <statement>
+// the variables only affect how the statement is executed, so we ignore them.
+set_statement_for:
+    SET STATEMENT set_statement_var (',' set_statement_var)* FOR;
+
+set_statement_var: name '=' (literal | name_all_tokens);
 
 statement:
     alter_table
