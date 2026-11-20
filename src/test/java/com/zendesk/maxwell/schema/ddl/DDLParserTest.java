@@ -360,6 +360,23 @@ public class DDLParserTest {
 	}
 
 	@Test
+	public void testSetStatementForDDL() {
+		TableAlter a = parseAlter("SET STATEMENT lock_wait_timeout=5 FOR ALTER TABLE foo ADD COLUMN bar int");
+		assertThat(a.table, is("foo"));
+		assertThat(((AddColumnMod) a.columnMods.get(0)).name, is("bar"));
+
+		a = parseAlter("-- a comment\n/* another */ set statement max_statement_time = 1.5, sql_mode='' FOR\nALTER TABLE foo ADD INDEX i (bar), ALGORITHM=INPLACE, LOCK=NONE");
+		assertThat(a.table, is("foo"));
+
+		TableCreate c = parseCreate("SET STATEMENT lock_wait_timeout=5, foreign_key_checks=0 FOR CREATE TABLE foo (statement int, `for` int)");
+		assertThat(c.table, is("foo"));
+		assertThat(c.columns.size(), is(2));
+
+		a = parseAlter("SET STATEMENT sql_mode=DEFAULT, unique_checks=OFF, max_statement_time=-1 FOR ALTER TABLE statement ADD COLUMN bar int");
+		assertThat(a.table, is("statement"));
+	}
+
+	@Test
 	public void testChangeColumn() {
 		TableAlter a = parseAlter("alter table c CHANGE column `foo` bar int(20) unsigned default 'foo' not null");
 
