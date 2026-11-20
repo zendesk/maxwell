@@ -6,7 +6,10 @@ import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RowMap;
 import org.junit.Test;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +47,26 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testReservedWordPkBootstrap() throws Exception {
 		runJSON("json/bootstrap-reserved-word-pk");
+	}
+
+	// Without a timeout, a regression here hangs the suite rather than failing it:
+	// the failing task gets retried forever and the test never sees it complete.
+	@Test(timeout = 60000)
+	public void testInvalidWhereClauseAbortsBootstrap() throws Exception {
+		List<RowMap> rows = runJSON("json/bootstrap-invalid-where-clause");
+
+		for ( RowMap r : rows ) {
+			if ( "bad_where_test".equals(r.getTable()) )
+				assertThat("unexpected row for aborted bootstrap: " + r.toJSON(), r.getRowType().startsWith("bootstrap-"), is(false));
+		}
+
+		try ( Connection cx = server.getConnection("maxwell");
+			  Statement s = cx.createStatement();
+			  ResultSet rs = s.executeQuery("select is_complete, inserted_rows from bootstrap where table_name = 'bad_where_test'") ) {
+			assertThat(rs.next(), is(true));
+			assertThat(rs.getInt("is_complete"), is(1));
+			assertThat(rs.getInt("inserted_rows"), is(0));
+		}
 	}
 
 	@Test

@@ -114,12 +114,25 @@ public class SynchronousBootstrapper {
 
 		Table table = getTableForTask(task);
 
-		producer.push(bootstrapStartRowMap(task, table));
-		LOGGER.info(String.format("bootstrapping started for %s.%s", task.database, task.table));
-
 		try ( Connection streamingConnection = getStreamingConnection(task.database)) {
 			setBootstrapRowToStarted(task.id);
-			ResultSet resultSet = getAllRows(task.database, task.table, table, task.whereClause, streamingConnection);
+
+			// run the query before announcing the bootstrap, so that a task that can't
+			// run doesn't emit a bootstrap-start with no matching bootstrap-complete.
+			ResultSet resultSet;
+			try {
+				resultSet = getAllRows(task.database, task.table, table, task.whereClause, streamingConnection);
+			} catch ( SQLSyntaxErrorException e ) {
+				// bad where_clause, missing column or privilege, etc: retrying can't fix it.
+				throw new BootstrapAbortException(String.format(
+					"query for %s.%s (where_clause: %s) failed: %s",
+					task.database, task.table, task.whereClause, e.getMessage()
+				));
+			}
+
+			producer.push(bootstrapStartRowMap(task, table));
+			LOGGER.info(String.format("bootstrapping started for %s.%s", task.database, task.table));
+
 			int insertedRows = 0;
 			lastInsertedRowsUpdateTimeMillis = 0; // ensure updateInsertedRowsColumn is called at least once
 			while ( resultSet.next() ) {

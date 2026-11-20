@@ -1,0 +1,13 @@
+truncate table maxwell.bootstrap;
+DROP TABLE IF EXISTS shard_1.bad_where_test;
+DROP TABLE IF EXISTS shard_1.after_bad_where_test;
+CREATE TABLE shard_1.bad_where_test (id int primary key, v text);
+CREATE TABLE shard_1.after_bad_where_test (id int primary key, v text);
+insert into shard_1.bad_where_test values (1, 'a'), (2, 'b');
+insert into shard_1.after_bad_where_test values (1, 'c');
+insert into maxwell.bootstrap set database_name = 'shard_1', table_name = 'bad_where_test', where_clause = 'this is not valid sql';
+insert into maxwell.bootstrap set database_name = 'shard_1', table_name = 'after_bad_where_test';
+
+-> { database: "shard_1", table: "after_bad_where_test", type: "bootstrap-start", data: {} }
+-> { database: "shard_1", table: "after_bad_where_test", type: "bootstrap-insert", data: { "id": 1, "v": "c" } }
+-> { database: "shard_1", table: "after_bad_where_test", type: "bootstrap-complete", data: {} }
